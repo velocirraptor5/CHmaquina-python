@@ -1,0 +1,33 @@
+.imagen{
+    position: absolute;
+}
+.cont-pantalla{
+    top: 25px;
+    left: 25px;
+    height: 282px;
+    width: 452px;
+    margin-bottom: 120px;
+}
+.Modo{
+    background-color: transparent;
+    margin-top: 130px;
+    margin-bottom: 20px;
+    height: 50px;
+    background-color: #6FB2D8;
+
+}
+.Modo .row1{
+    height:100%;
+}
+.cont-impre-ux{    
+    left: 120px;
+    top: 12px;
+    height: 112px;
+    width: 262px;
+}
+.cont-impre{    
+    left: 120px;
+    top: 165px;
+    height: 112px;
+    width: 262px;
+}

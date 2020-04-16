@@ -1,0 +1,26 @@
+
+
+{% extends "core/base.html" %}
+
+{% block title %} Portada {% endblock %}
+
+{% block background %}{% load static %}{% static 'core/img/home-bg.jpg' %}{% endblock background %}
+
+{% block headers %}
+    <h1>Velocirraptor5</h1>
+    <span class="subheading">Administrador de Sistemas de Informaticos</span>
+{% endblock headers %}
+
+{% block content %}
+    <h2>
+        Bienvenido 
+    </h2>
+    <p>
+        Mi nombre es: {{nombre_pesona}} {{apellido_persona}}
+    </p>
+    
+    <p> Mi Whatsapp es: {{numero_persona}} </p>
+    <p> Y mi correo es: 
+        <a href="mailto:{{correo_persona}}">{{correo_persona}} </a>
+         </p>
+{% endblock %}

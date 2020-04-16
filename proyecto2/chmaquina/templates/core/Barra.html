@@ -1,0 +1,29 @@
+{% load static %}
+<link href="{% static 'core/css/EstiloBarra.css' %}" rel="stylesheet">
+<nav class="navbar nav-1 navbar-expand-lg navbar-light">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <a class="nav-image" href="">
+          <img src="{% static 'core/img/logo.png'%}" class="responsive-img" alt="logo" height="30" width="30">
+        </a>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto justify-content-between">
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Abrir</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Ejecutar</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Mostrar Memoria</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Paso a paso</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Salir</a>
+                </li>
+            </ul>
+        </div>
+    </nav>

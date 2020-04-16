@@ -1,0 +1,75 @@
+
+.row-1{
+    width: 800px;
+}
+
+.row-1 .card{
+    margin-bottom: 20px;
+    background-color: #6FB2D8;
+    padding: 16px;
+}
+
+.row-1 .row1{
+    margin-bottom: 16px;
+}
+
+.row-1 .col2 .row2{
+    margin-bottom: 16px;
+    background-color: #4fa5d6;
+}
+
+.row-1 .row:hover{
+    background-color: #72a5c2;
+}
+
+
+.row-2 .card{
+    margin-bottom: 20px;
+    background-color: #38B6FF;
+}
+
+.row-2 .col1 .card{
+    height: 500px;
+}
+
+.row-2 .col2 .card{
+    height: 46%;
+}
+
+.row-2 .col2 tbody{
+    height: 80%;
+}
+
+.row-3 .card{
+    height: 200px;
+    width: 800px;
+}
+.row-3 .table{
+    background-color: black;
+}
+
+.row-3 .card tbody{
+    height: 50%;
+}
+
+tr {
+    width: 100%;
+    display: inline-table;
+    height:20px;
+    table-layout: fixed;
+}
+
+table{
+    height:100%; 
+}
+tbody{
+    overflow-y: scroll;
+    height: 100%;
+    width: 100%;
+    position: absolute;
+}
+
+.row{
+    margin: 0px;
+    width: 100%;
+}

@@ -1,0 +1,17 @@
+{% load static %}
+<link href="{% static 'core/css/EstiloCuerpo.css' %}" rel="stylesheet">
+
+<div class="row principal">
+  <div class="col columna1">
+    {% include "core/columnas/columna1.html" %}
+  </div>
+  
+  <div class="col columna2">
+     {% include "core/columnas/columna2.html" %}
+  </div>
+  <div class="col columna3">
+    <div class="card">
+      {% include "core/columnas/columna3.html" %}
+    </div>
+  </div>
+</div>
