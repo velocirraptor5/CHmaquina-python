@@ -19,5 +19,4 @@ from chmaquina import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('',views.saludo,name="home"),
-    path('no_importa/',views.cursoCfunc,name="Curso"),
 ]

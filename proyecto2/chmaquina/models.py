@@ -1,8 +1,8 @@
- from django.db import models
+from django.db import models
 
 # Create your models here.
 
-class Project(models.Model):
+class Archivo(models.Model):
     descripcion = models.TextField()
     imagen= models.ImageField()
     class Meta:
