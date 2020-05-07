@@ -19,7 +19,7 @@
         </thead>
         <tbody class="overflow-auto">
             <tr>
-                <td>
+                <td><!--Acumulador-->
                     <img src="{% static 'core/img/logo.png'%}" class="responsive-img" alt="logo" height="30" width="30">
                 </td>
                 <td>
@@ -29,28 +29,32 @@
                     <div class="text">xxxxx</div>
                 </td>
             </tr>
-            <tr>
-                <td>
-                    <img src="{% static 'core/img/pinguino.png'%}" class="responsive-img" alt="logo" height="30" width="30">
-                </td>
-                <td>
-                    <div class="text">0000</div>
-                </td>
-                <td>
-                    <div class="text">xxxxx</div>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <img src="{% static 'core/img/lobo.png'%}" class="responsive-img" alt="logo" height="30" width="30">
-                </td>
-                <td>
-                    <div class="text">0000</div>
-                </td>
-                <td>
-                    <div class="text">xxxxx</div>
-                </td>
-            </tr>
+            {% for w in kernel  %}
+                <tr><!--Kernel-->
+                    <td>
+                        <img src="{% static 'core/img/pinguino.png'%}" class="responsive-img" alt="logo" height="30" width="30">
+                    </td>
+                    <td>
+                        <div class="text">{{w}}</div>
+                    </td>
+                    <td>
+                        <div class="text">Kernel</div>
+                    </td>
+                </tr>
+            {% endfor %}
+            {% for w in memoriaLibre %}    
+                <tr><!--Memoria libre-->
+                    <td>
+                        <img src="{% static 'core/img/lobo.png'%}" class="responsive-img" alt="logo" height="30" width="30">
+                    </td>
+                    <td>
+                        <div class="text">{{w}}</div>
+                    </td>
+                    <td>
+                        <div class="text"></div>
+                    </td>
+                </tr>
+            {% endfor %}
         </tbody>
     </table>            
 </div>
