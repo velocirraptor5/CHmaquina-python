@@ -54,10 +54,14 @@ class VistaPrincipal(CreateView):
     def get(self, request, *args, **kwargs):
         elementos = Archivo.objects.all()
         nombre="nombre pred"
-        elemento = elementos[-1]
+        elemento = list(elementos)[-1]
         memoria= elemento.memoria
         kernel = elemento.kernel
-        nombre = ((elemento.archivo).split('/'))[1] 
+        try:
+            nombre = list((str(elemento.archivo).split('/')))[1]    
+        except:
+            nombre = "ERROR"
+         
 
         """
         for elemento in elementos:
@@ -67,8 +71,8 @@ class VistaPrincipal(CreateView):
             memoriaFinal=int(memorias) # con esto sabemos cuanto es la memoria final entregado por el usuario
             kernelFinal=int(kernels) # con esto sabemos cuanto es el kernel final entregado por el usuario
         """
-
-        MemoriaLibre = int(memoria)- int(kernel) -1 # aquí se verifica cuanta memoria disponible hay (kernel - acumulador - total memoria)
+        
+        MemoriaLibre = int(memoria) - int(kernel) -1 # aquí se verifica cuanta memoria disponible hay (kernel - acumulador - total memoria)
         Kernels=[] # se utilizan listas para mostrar las posiciones de memoria en el kernel 
         Memorias=[] # se utulizan listas para mostrar las posiciones de memoria disponible  
         

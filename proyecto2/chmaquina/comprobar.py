@@ -3,7 +3,7 @@ from .models import Archivo
 
 
 #ruta=request.FILES.get('archivo')
-ruta =""
+ruta ="media/bodega/factorial.ch"
 #tup = ArchivosCh.objects.all() cambio de modelo para tomar la memoria y el kernel
 tup = Archivo.objects.all()
 
@@ -16,7 +16,8 @@ class sintax:
     #while(True):
     #ruta = "media/" + ruta
     #print(ruta) 
-    f = open("media/" + ruta, "r")
+    ruta="media/bodega/factorial.ch"
+    f = open(ruta, "r")
     myfile = File(f)
     #print(myfile)
     leer = myfile.readlines() #para leer linea a linea #print(leer)

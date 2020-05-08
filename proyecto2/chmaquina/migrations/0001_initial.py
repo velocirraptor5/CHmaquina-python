@@ -12,12 +12,11 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Archivo',
+            name='Project',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('archivo', models.FileField(blank=True, null=True, upload_to=core.models.custom_upload_to)),
-                ('memoria', models.IntegerField(blank=True, null=True)),
-                ('kernel', models.IntegerField(blank=True, null=True)),
+                ('descripcion', models.TextField()),
+                ('imagen', models.ImageField(upload_to='')),
             ],
         ),
     ]
