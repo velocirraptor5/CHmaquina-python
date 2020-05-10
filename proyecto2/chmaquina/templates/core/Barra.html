@@ -1,5 +1,10 @@
 {% load static %}
 <link href="{% static 'core/css/EstiloBarra.css' %}" rel="stylesheet">
+ 
+<script src="{% static 'core/js/jquery-3.4.1.min.js' %}"></script>
+<script src="{% static 'core/js/bootstrap.min.js' %}"></script>
+<script src="{% static 'core/js/script.js' %}"></script>
+
 <nav class="navbar nav-1 navbar-expand-lg navbar-light">
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -13,7 +18,7 @@
                     <!--<a class="nav-link" href="#">Abrir</a>-->
                     <form id="formularioprin" name="formularioprinc" action="" method="post" enctype="multipart/form-data">{% csrf_token %}
 		  	            <input type="file" name="archivo" id="subirArchivoCh" accept=".ch" style="display : none;" >
-                        <a class="nav-item nav-link" id="btnAbrir" onclick="document.getElementById('subirArchivoCh').click();
+                        <a class="nav-link" id="btnAbrir" onclick="document.getElementById('subirArchivoCh').click();
                         document.getElementById('btnUp').style = 'display : block;'
                         document.getElementById('btnAbrir').style = 'display : none;'" >Abrir</a>
                         <input type="submit" value="Subir" id="btnUp"  class="btnsubir" >

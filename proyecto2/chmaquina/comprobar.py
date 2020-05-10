@@ -5,14 +5,18 @@ from .models import Archivo
 #ruta=request.FILES.get('archivo')
 ruta ="media/bodega/factorial.ch"
 #tup = ArchivosCh.objects.all() cambio de modelo para tomar la memoria y el kernel
+"""
 tup = Archivo.objects.all()
 
 for tp in tup:
     nombre=tp.archivo
     ruta = str(nombre)
     print(ruta)
-
+"""
 class sintax:
+    def __init__(self,ruta):
+        ruta= "media/bodega/"+str(self.ruta)
+        
     #while(True):
     #ruta = "media/" + ruta
     #print(ruta) 
