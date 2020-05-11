@@ -17,12 +17,10 @@
                 <li class="nav-item">
                     <!--<a class="nav-link" href="#">Abrir</a>-->
                     <form id="formularioprin" name="formularioprinc" action="" method="post" enctype="multipart/form-data">{% csrf_token %}
-		  	            <input type="file" name="archivo" id="subirArchivoCh" accept=".ch" style="display : none;" >
-                        <a class="nav-link" id="btnAbrir" onclick="document.getElementById('subirArchivoCh').click();
-                        document.getElementById('btnUp').style = 'display : block;'
-                        document.getElementById('btnAbrir').style = 'display : none;'" >Abrir</a>
-                        <input type="submit" value="Subir" id="btnUp"  class="btnsubir" >
-		            </form>
+                        <input type="file" name="archivo" id="subirArchivoCh" accept=".ch" style="display : none;" required >
+                        <a class="nav-item nav-link" id="btnAbrir" onclick="actionOpen()" >Abrir</a> <!--boton abrir-->
+                        <input type="submit" value="Subir" id="btnUp"  class="btnsubir" > <!--boton subir-->
+	                </form>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#">Ejecutar</a>

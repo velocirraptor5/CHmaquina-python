@@ -15,12 +15,11 @@ for tp in tup:
 """
 class sintax:
     def __init__(self,ruta):
-        ruta= "media/bodega/"+str(self.ruta)
+        ruta= "media/bodega/"+str(ruta)
         
     #while(True):
     #ruta = "media/" + ruta
     #print(ruta) 
-    ruta="media/bodega/factorial.ch"
     f = open(ruta, "r")
     myfile = File(f)
     #print(myfile)

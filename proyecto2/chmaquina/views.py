@@ -21,39 +21,58 @@ class VistaPrincipal(CreateView):
     def get(self, request, *args, **kwargs):
         Errores=[]
         elementos = Archivo.objects.all()
-        nombre="nombre pred"
-        elemento = list(elementos)[-1]
+        try:
+            elemento = list(elementos)[-1]
+            
+        except:
+            memoria =100
+            kernel = 10
+            nombre = "......"
+            return  render(request, self.template_name,self.paraFront(memoria,kernel,nombre)) 
+        
+        
+        
         memoria= elemento.memoria
         kernel = elemento.kernel
+
         try:
-            nombre = list((str(elemento.archivo).split('/')))[1]    
+            memoria= int(memoria) 
+            kernel= int(kernel) 
         except:
-            nombre = "ERROR"
-            Errores.append("Error en la busqueda del archivo")
-        
-        try:
-            MemoriaLibre = int(memoria) - int(kernel) -1
-        except:
-            MemoriaLibre=3
             kernel=3
             memoria=6
             Errores.append("Error en la difinicion de la memoria y/o el kernel")
             
+        if not (kernel<memoria):
+            Errores.append("la cantidad de memoria es insuficiente se le agregara memoria")
+            memoria+=3 
 
-
-        
+        Errores.append("pruebas")
          # aquí se verifica cuanta memoria disponible hay (kernel - acumulador - total memoria)
-        Kernels=[] # se utilizan listas para mostrar las posiciones de memoria en el kernel 
-        Memorias=[] # se utulizan listas para mostrar las posiciones de memoria disponible  
+        try:
+            nombreArch = list((str(elemento.archivo).split('/')))[1]    
+        except:
+            nombreArch = "ERROR"
+            Errores.append("Error en la busqueda del archivo")
+
+        return render(request, self.template_name,self.paraFront(memoria,kernel,nombreArch,Errores)) 
+
+    def paraFront(memoria,kernel,nombreArch,Errores=[]):
+        Kernels=[]
+        Memorias=[]
         
-
-
         Kernels.extend(range(1,kernel+1))
         Memorias.extend(range(kernel+1, memoria+1))
+        
+        return  {
+                'memoria':memoria,
+                'kernel':kernel,
+                'errores':Errores,
+                'nombre':nombreArch,
+                'memoriaLibre': Memorias, 
+                'Kernels': Kernels
+                }
 
-        return render(request, self.template_name,{'sintax':sintax(nombre).pruebaTotal(),'nombre':nombre,'memoriaLibre': Memorias, 'kernel': Kernels}) # })#,
-
-    
     def get_object(self, queryset=None):
         #recuperar el objeto que se va a editar
         #profile, created= ArchivosCh.objects.get_or_create()
