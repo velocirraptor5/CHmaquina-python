@@ -29,7 +29,7 @@
                     <div class="text">xxxxx</div>
                 </td>
             </tr>
-            {% for w in Kernels%}
+            {% for w in numKernels%}
                 <tr><!--Kernel-->
                     <td>
                         <img src="{% static 'core/img/pinguino.png'%}" class="responsive-img" alt="logo" height="30" width="30">
@@ -42,7 +42,7 @@
                     </td>
                 </tr>
             {% endfor %}
-            {% for w in memoriaLibre %}    
+            {% for w in numRestante %}    
                 <tr><!--Memoria libre-->
                     <td>
                         <img src="{% static 'core/img/lobo.png'%}" class="responsive-img" alt="logo" height="30" width="30">

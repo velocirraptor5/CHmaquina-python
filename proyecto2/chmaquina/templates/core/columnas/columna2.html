@@ -5,10 +5,8 @@
     <img src="{% static 'core/img/monitor.png'%}" alt="Monitor" height="400" width="500">
 </a>
 <div class="card cont-pantalla overflow-auto">
-      {% for error in Errores %}
-        <p>
-            {{error}}
-        </p>
+      {% for error in errores %}
+        <div class="text"> {{error}} </div>
       {% endfor %}
 </div>
 <div class="card Modo ">

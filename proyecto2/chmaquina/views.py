@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.views.generic.edit import UpdateView, CreateView
 from django.urls import reverse_lazy
 from .models import Archivo
-from .comprobar import sintax
+from .verSintaxis import sintax
 
 class VistaPrincipal(CreateView):
     #form_class = ArchivoForm
@@ -21,56 +21,71 @@ class VistaPrincipal(CreateView):
     def get(self, request, *args, **kwargs):
         Errores=[]
         elementos = Archivo.objects.all()
+        
+        #si es la primera vez que se habre la pagina
         try:
             elemento = list(elementos)[-1]
             
         except:
             memoria =100
-            kernel = 10
+            kernel = 9
             nombre = "......"
-            return  render(request, self.template_name,self.paraFront(memoria,kernel,nombre)) 
+            W=self.paraFront(memoria,kernel,nombre)
+            return  render(request, self.template_name,W) 
         
         
         
         memoria= elemento.memoria
         kernel = elemento.kernel
-
+        #con prueba de que memoria y kernel sean numeros
         try:
             memoria= int(memoria) 
             kernel= int(kernel) 
         except:
-            kernel=3
-            memoria=6
-            Errores.append("Error en la difinicion de la memoria y/o el kernel")
-            
+            kernel=9
+            memoria=100
+            Errores.append("Error en la difinicion de la memoria y/o el kernel se asignan los valores defecto")
+        
+
         if not (kernel<memoria):
             Errores.append("la cantidad de memoria es insuficiente se le agregara memoria")
-            memoria+=3 
+            memoria=kernel+3 
 
-        Errores.append("pruebas")
          # aquí se verifica cuanta memoria disponible hay (kernel - acumulador - total memoria)
         try:
             nombreArch = list((str(elemento.archivo).split('/')))[1]    
         except:
             nombreArch = "ERROR"
             Errores.append("Error en la busqueda del archivo")
+            W=self.paraFront(memoria,kernel,nombreArch,Errores)
+            return render(request, self.template_name,W) 
 
-        return render(request, self.template_name,self.paraFront(memoria,kernel,nombreArch,Errores)) 
+        sixCH=sintax(nombreArch)
+        if sixCH.OK:
+            Errores.extend(sixCH.errors)
+            W=self.paraFront(memoria,kernel,nombreArch,Errores)
+            return render(request, self.template_name,W) 
+        else:
+            Errores.extend(sixCH.errors)
+            W=self.paraFront(memoria,kernel,nombreArch,Errores)
+            return render(request, self.template_name,W) 
 
-    def paraFront(memoria,kernel,nombreArch,Errores=[]):
-        Kernels=[]
-        Memorias=[]
         
-        Kernels.extend(range(1,kernel+1))
-        Memorias.extend(range(kernel+1, memoria+1))
+
+    def paraFront(self,memoria,kernel,nombreArch,Errores=[]):
+        numKernels=[]
+        numMemorias=[]
+        
+        numKernels.extend(range(1,kernel+1))
+        numMemorias.extend(range(kernel+1, memoria+1))
         
         return  {
                 'memoria':memoria,
                 'kernel':kernel,
                 'errores':Errores,
                 'nombre':nombreArch,
-                'memoriaLibre': Memorias, 
-                'Kernels': Kernels
+                'numRestante': numMemorias, 
+                'numKernels': numKernels
                 }
 
     def get_object(self, queryset=None):

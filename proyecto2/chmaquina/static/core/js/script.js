@@ -11,7 +11,17 @@ $(document).ready(function () {
 
     $('#myModal').on('shown.bs.modal', function () {
         $('#myInput').trigger('focus')
-      });
+    });
+    let bandera = true;
+    this.showHidden = function () {
+        if (bandera) {
+            $('.columna3').removeClass('hidden');
+        } else {
+            $('.columna3').addClass('hidden');
+        }
+        bandera = !bandera;
+    };
+
     actionOpen = function () {
         document.getElementById('subirArchivoCh').click();
         let a = document.getElementById('btnAbrir');/*este abrir (muestra la ventana)*/
@@ -30,8 +40,14 @@ $(document).ready(function () {
                 a.style = 'display : block;';
             }
         });
+        
+
+        //a.style = 'display : none;'; 
+
+    
+        
+        
+
         return true;
     };
 });
-
-
