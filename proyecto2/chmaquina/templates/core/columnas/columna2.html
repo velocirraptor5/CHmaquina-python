@@ -6,7 +6,10 @@
 </a>
 <div class="card cont-pantalla overflow-auto">
       {% for error in errores %}
-        <div class="text"> {{error}} </div>
+        <div class="text-center"> {{error}} </div>
+      {% endfor %}
+      {% for P in Pantalla %}
+        <div class="text"> {{P}} </div>
       {% endfor %}
 </div>
 <div class="card Modo ">
@@ -20,7 +23,9 @@
     <img src="{% static 'core/img/impresora.png'%}" alt="Monitor" height="400" width="500">
 </a>
 <div class="card cont-impre-ux overflow-auto">
-      
+      {% for I in Impresora %}
+        <div class="text"> {{I}} </div>
+      {% endfor %}
 </div>
 
 <div class="card cont-impre overflow-auto">

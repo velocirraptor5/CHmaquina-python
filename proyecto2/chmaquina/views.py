@@ -77,7 +77,7 @@ class VistaPrincipal(CreateView):
             self.OK=True
             self.acumulador=0
             self.pc=0
-            self.Errores.append("No hay errores de compilacion")
+            self.Errores.append("*****No hay errores de compilacion*****")
             W=self.paraFront()
             return render(request, self.template_name,W) 
         else:
@@ -131,6 +131,10 @@ class vistaEjecucion(VistaPrincipal):
             chEjec=ejecutar(self.arch,self.kernel,self.memoria)
             self.acumulador=chEjec.acumulador
             self.Errores.extend(chEjec.errors)
+            if chEjec.noAcabe:
+                pass
+            else:
+                pass
             return render(request, self.template_name,self.paraFrontEje(chEjec))
         else:
             self.Errores.append("no se puede ejecutar tiene errores de ejecucion")
@@ -158,4 +162,6 @@ class vistaEjecucion(VistaPrincipal):
         resp['RB']=self.kernel+1
         resp['RLC']=len(chEjec.arch)+self.kernel
         resp['RLP']=len(chEjec.Memoria)+self.kernel
+        resp['Pantalla']=chEjec.mostrar
+        resp['Impresora']=chEjec.imprimir
         return resp

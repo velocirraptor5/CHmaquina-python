@@ -1,5 +1,6 @@
+import copy
 class ejecutar:
-    def __init__(self,arch,kernel,memoria):
+    def __init__(self,arch,kernel,memoria,almacenar=False):
         self.arch = arch
         self.memoria=memoria
         self.kernel=kernel
@@ -12,7 +13,12 @@ class ejecutar:
         self.posEt=[]
         self.acumulador=0
         self.linea=0
+        self.noAcabe=False
+        self.imprimir=[]
+        self.mostrar=[]
         self.errors=[]
+        self.almacenar=almacenar
+        self.almacen=[]
         self.run()
 
     def run(self):
@@ -43,6 +49,9 @@ class ejecutar:
         for num,self.linea in enumerate(self.arch):
             linea=self.linea.split()
             self.accion(linea)
+            if self.almacenar:
+                self.almacen=copy.deepcopy(self)
+
 
         
 
@@ -60,59 +69,42 @@ class ejecutar:
             self.vaya(linea)
         elif tipo == "vayasi":
             self.vayasi(linea)
-            return
         elif tipo == "nueva":
             return
         elif tipo == "etiqueta":
             return
         elif tipo == "lea":
             self.lea(linea)
-            return
         elif tipo == "sume":
-            #self.sume(linea)
-            return
+            self.sume(linea)
         elif tipo == "reste":
-            #self.reste(linea)
-            return
+            self.reste(linea)
         elif tipo == "multiplique":
-            #self.multiplique(linea)
-            return
+            self.multiplique(linea)
         elif tipo == "divida":
-            #self.divida(linea)
-            return
+            self.divida(linea)
         elif tipo == "potencia":
-            #self.potencia(linea)
-            return
+            self.potencia(linea)
         elif tipo == "modulo":
-            #self.modulo(linea)
-            return
+            self.modulo(linea)
         elif tipo == "concatene":
-            #self.concatene(linea)
-            return
+            self.concatene(linea)
         elif tipo == "elimine":
-            #self.elimine(linea)
-            return
+            self.elimine(linea)
         elif tipo == "Extraiga":
-            #self.Extraiga(linea)
-            return
+            self.Extraiga(linea)
         elif tipo == "Y":
-            #self.Y(linea)
-            return
+            self.Y(linea)
         elif tipo == "O":
-            #self.O(linea)
-            return
+            self.O(linea)
         elif tipo == "NO":
-            #self.NO(linea)
-            return
+            self.NO(linea)
         elif tipo == "muestre":
-            #self.muestre(linea)
-            return
+            self.muestre(linea)
         elif tipo == "imprima":
-            #self.imprima(linea)
-            return
+            self.imprima(linea)
         elif tipo == "retorne":
-            #self.retorne(linea)
-            return
+            self.retorne(linea)
         elif tipo[0]=="/" and tipo[1]=="/":
             return
         else:
@@ -150,162 +142,209 @@ class ejecutar:
             return
 
     def lea(self,linea):
+        self.noAcabe=True
         input("ingrese el valor para la variable"+str(linea))
 
     def sume(self,linea):
-        if self.estandar(linea):
-            i=self.variables.index(linea[1])
-            valid=['I','R']
-            return self.tipoVar[i] in valid    
+        try:
+            acumtemp=int(self.acumulador)
+        except:
+            try:
+                acumtemp=float(self.acumulador)
+            except:
+                self.errors.append("el Acumulador no puede ser convertido en valor numerico")
+                return  
+          
+        i=self.variables.index(linea[1])
+        RposVar=self.posVar[i]-self.kernel-1
+        valor=self.Memoria[RposVar]
+
+        tipoV=self.tipoVar[i]
+        if tipoV == "I":
+            valor=int(valor)
+        else:
+            valor=float(valor)
+
+        self.acumulador=acumtemp+valor
     
     def reste(self,linea):
-        if len(linea)!=2:
-            self.errors.append("la cantidad de parametros no coinciden")
-            return False
-        if linea[1] not in self.variables:
-            self.errors.append("no exite la variable"+ linea[1])
+        try:
+            acumtemp=int(self.acumulador)
+        except:
+            try:
+                acumtemp=float(self.acumulador)
+            except:
+                self.errors.append("el Acumulador no puede ser convertido en valor numerico")
+                return  
+
+        i=self.variables.index(linea[1])
+        RposVar=self.posVar[i]-self.kernel-1
+        valor=self.Memoria[RposVar]
+        tipoV=self.tipoVar[i]
         
-        return ((len(linea)==2) and (linea[1] in self.variables))
-    
+        if tipoV == "I":
+            valor=int(valor)
+        else:
+            valor=float(valor)
+        
+        self.acumulador=acumtemp-valor
+
     def multiplique(self,linea):
-        if len(linea)!=2:
-            self.errors.append("la cantidad de parametros no coinciden")
-            return Fa
-        if linea[1] not in self.variables:
-            self.errors.append("no exite la variable"+ linea[1])
+        try:
+            acumtemp=int(self.acumulador)
+        except:
+            try:
+                acumtemp=float(self.acumulador)
+            except:
+                self.errors.append("el Acumulador no puede ser convertido en valor numerico")
+                return  
+
+        i=self.variables.index(linea[1])
+        RposVar=self.posVar[i]-self.kernel-1
+        valor=self.Memoria[RposVar]
+        tipoV=self.tipoVar[i]
+        if tipoV == "I":
+            valor=int(valor)
+        else:
+            valor=float(valor)
         
-        return ((len(linea)==2) and (linea[1] in self.variables))
+        self.acumulador= acumtemp*valor
 
     def divida(self,linea):
-        if len(linea)!=2:
-            self.errors.append("la cantidad de parametros no coinciden")
-            return False
-        if linea[1] not in self.variables:
-            self.errors.append("no exite la variable"+ linea[1])
+        try:
+            acumtemp=int(self.acumulador)
+        except:
+            try:
+                acumtemp=float(self.acumulador)
+            except:
+                self.errors.append("el Acumulador no puede ser convertido en valor numerico")
+                return  
 
-        return ((len(linea)==2) and (linea[1] in self.variables))
-    
-    def potencia(self,linea):
-        if len(linea)!=2:
-            self.errors.append("la cantidad de parametros no coinciden")
-            return False
         i=self.variables.index(linea[1])
-        if linea[1] not in self.variables:
-            self.errors.append("no exite la variable"+ linea[1])
+        RposVar=self.posVar[i]-self.kernel-1
+        valor=self.Memoria[RposVar]
+        tipoV=self.tipoVar[i]
+        if tipoV == "I":
+            valor=int(valor)
+        else:
+            valor=float(valor)
+        
+        self.acumulador=acumtemp/valor
 
-        return ((len(linea)==2) and (linea[1] in self.variables) and self.tipoVar[i]== 'I')
+    def potencia(self,linea):
+        try:
+            acumtemp=int(self.acumulador)
+        except:
+            try:
+                acumtemp=float(self.acumulador)
+            except:
+                self.errors.append("el Acumulador no puede ser convertido en valor numerico")
+                return  
+
+        i=self.variables.index(linea[1])
+        RposVar=self.posVar[i]-self.kernel-1
+        valor=self.Memoria[RposVar]
+        tipoV=self.tipoVar[i]
+        if tipoV == "I":
+            valor=int(valor)
+        else:
+            valor=float(valor)
+        
+        self.acumulador=acumtemp**valor
 
     def modulo(self,linea):
-        if len(linea)!=2:
-            self.errors.append("la cantidad de parametros no coinciden")
-            return False
-        if linea[1] not in self.variables:
-            self.errors.append("no exite la variable"+ linea[1])
-        return ((len(linea)==2) and (linea[1] in self.variables))
+        try:
+            acumtemp=int(self.acumulador)
+        except:
+            try:
+                acumtemp=float(self.acumulador)
+            except:
+                self.errors.append("el Acumulador no puede ser convertido en valor numerico")
+                return  
 
-    def concatene(self,linea):
-        if len(linea)!=2:
-            self.errors.append("la cantidad de parametros no coinciden")
-            return False
-        if linea[1] not in self.variables:
-            self.errors.append("no exite la variable"+ linea[1])
-        return ((len(linea)==2) and (linea[1] in self.variables))
-    
+        i=self.variables.index(linea[1])
+        RposVar=self.posVar[i]-self.kernel-1
+        valor=self.Memoria[RposVar]
+        tipoV=self.tipoVar[i]
+        if tipoV == "I":
+            valor=int(valor)
+        else:
+            valor=float(valor)
+        
+        self.acumulador=acumtemp%valor
+
+    def concatene(self,linea):       
+        i=self.variables.index(linea[1])
+        RposVar=self.posVar[i]-self.kernel-1
+        valor=self.Memoria[RposVar]
+        self.acumulador=self.acumulador+valor
+
     def elimine(self,linea):
-        if len(linea)!=2:
-            self.errors.append("la cantidad de parametros no coinciden")
-            return False
-        if linea[1] not in self.variables:
-            self.errors.append("no exite la variable"+ linea[1])
-        return ((len(linea)==2) and (linea[1] in self.variables))
+        i=self.variables.index(linea[1])
+        RposVar=self.posVar[i]-self.kernel-1
+        valor=self.Memoria[RposVar]
+        while valor in self.acumulador:
+            del self.acumulador[valor]
     
     def Extraiga(self,linea):
-        if len(linea)!=2:
-            self.errors.append("la cantidad de parametros no coinciden")
-            return False
-        if linea[1] not in self.variables:
-            self.errors.append("no exite la variable"+ linea[1])
-        return ((len(linea)==2) and (linea[1] in self.variables))
+        i=self.variables.index(linea[1])
+        RposVar=self.posVar[i]-self.kernel-1
+        valor=self.Memoria[RposVar]
+        self.acumulador=self.acumulador[:valor]
 
     def Y(self,linea):
-        if len(linea)!=4:
-            self.errors.append("la cantidad de parametros no coinciden")
-            return False
-        if linea[1] not in self.variables:
-            self.errors.append("no exite la variable"+ linea[1])
-            return False
+        i=self.variables.index(linea[1])
+        RposVar=self.posVar[i]-self.kernel-1
+        valor1=self.Memoria[RposVar]
 
-        tip = self.getTipovar(linea[1])
-        if tip != 'C':
-            self.errors.append("el tipo de variable"+str(linea[1])+"-----"+str(tip)+ "es incorrecto para esta operacion logica")
-            return False
-        
-        if linea[2] not in self.variables:
-            self.errors.append("no exite la variable"+ linea[2])
-            return False
+        i=self.variables.index(linea[2])
+        RposVar=self.posVar[i]-self.kernel-1
+        valor2=self.Memoria[RposVar]
 
-        tip = self.getTipovar(linea[2])
-        if tip != 'C':
-            self.errors.append("el tipo de variable"+str(linea[2])+"-----"+str(tip)+ "es incorrecto para esta operacion logica")
-            return False
+        i=self.variables.index(linea[3])
+        RposVar=self.posVar[i]-self.kernel-1
+        self.Memoria[RposVar] = (bool(valor1) and bool(valor2))
 
-        if linea[3] not in self.variables:
-            self.errors.append("no exite la variable"+ linea[3])      
-            return False
-
-        tip = self.getTipovar(linea[3])
-        if tip != 'C':
-            self.errors.append("el tipo de variable"+str(linea[3])+"-----"+str(tip)+ "es incorrecto para esta operacion logica")
-            return False
-
-        return True
-    
     def O(self,linea):
-        if len(linea)!=4:
-            self.errors.append("la cantidad de parametros no coinciden")
-            return False
-        if linea[1] not in self.variables:
-            self.errors.append("no exite la variable"+ linea[1])
-        if linea[2] not in self.variables:
-            self.errors.append("no exite la variable"+ linea[2])
-        if linea[3] not in self.variables:
-            self.errors.append("no exite la variable"+ linea[3])      
-        return ((len(linea)==4) and (linea[1] in self.variables) and (linea[2] in self.variables) and (linea[3] in self.variables))
+        i=self.variables.index(linea[1])
+        RposVar=self.posVar[i]-self.kernel-1
+        valor1=self.Memoria[RposVar]
 
-    def NO(self,linea):
-        if len(linea)!=3:
-            self.errors.append("la cantidad de parametros no coinciden")
-            return False
-        if linea[1] not in self.variables:
-            self.errors.append("no exite la variable"+ linea[1])
-            return False
-        if  not self.tipoCorrecto(linea[1],'L'):            
-            return False
-    
-        if linea[2] not in self.variables:
-            self.errors.append("no exite la variable"+ linea[2])
-            return False
-        if  not self.tipoCorrecto(linea[2],'L'):            
-            return False
+        i=self.variables.index(linea[2])
+        RposVar=self.posVar[i]-self.kernel-1
+        valor2=self.Memoria[RposVar]
+
+        i=self.variables.index(linea[3])
+        RposVar=self.posVar[i]-self.kernel-1
+        self.Memoria[RposVar] = (bool(valor1) or bool(valor2))
         
-        return True
+    def NO(self,linea):
+        i=self.variables.index(linea[1])
+        RposVar=self.posVar[i]-self.kernel-1
+        valor1=self.Memoria[RposVar]
+
+        i=self.variables.index(linea[2])
+        RposVar=self.posVar[i]-self.kernel-1
+        self.Memoria[RposVar] = not bool(valor1)
+        
         
     def muestre(self,linea):
-        if len(linea)!=2:
-            self.errors.append("la cantidad de parametros no coinciden")
-            return False
-        if linea[1] not in self.variables:
-            self.errors.append("no exite la variable"+ linea[1])
-        return ((len(linea)==2) and (linea[1] in self.variables))
+        if linea[1]== "acumulador":
+            self.mostrar.append(self.acumulador)
+            return
+        i=self.variables.index(linea[1])
+        RposVar=self.posVar[i]-self.kernel-1
+        valor=self.Memoria[RposVar]
+        self.mostrar.append(valor)
     
     def imprima(self,linea):
-        if len(linea)!=2:
-            self.errors.append("la cantidad de parametros no coinciden")
-            return False
-        if linea[1] not in self.variables:
-            self.errors.append("no exite la variable"+ linea[1])
-        return ((len(linea)==2) and (linea[1] in self.variables))
+        if linea[1]== "acumulador":
+            self.imprimir.append(self.acumulador)
+            return
+        i=self.variables.index(linea[1])
+        RposVar=self.posVar[i]-self.kernel-1
+        valor=self.Memoria[RposVar]
+        self.imprimir.append(valor)
+    
     def retorne(self,linea):
-        if len(linea)>2:
-            self.errors.append("la cantidad de parametros no coinciden")
-        return ((len(linea)<=2))
+        return 
