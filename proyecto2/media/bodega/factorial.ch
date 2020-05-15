@@ -1,4 +1,4 @@
-nueva unidad I 1
+nueva               unidad           I         1
 nueva m I 5
 nueva respuesta I 1
 nueva intermedia I 0
@@ -17,3 +17,4 @@ etiqueta fin 19
 muestre respuesta
 imprima respuesta
 retorne 0
+

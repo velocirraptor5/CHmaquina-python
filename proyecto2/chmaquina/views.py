@@ -8,10 +8,9 @@ from django.urls import reverse_lazy
 from .models import Archivo
 from .verSintax import sintax
 from .ejecucion import ejecutar
+import numpy as np
 
 class VistaPrincipal(CreateView):
-    #form_class = ArchivoForm
-    #model = ArchivosCh se cambió el modelo para poder recuperar la memoria y el kernel
     model = Archivo
     fields = ['archivo', 'memoria','kernel']
     
@@ -22,9 +21,11 @@ class VistaPrincipal(CreateView):
         self.Errores=[]
         self.kernel=9
         self.memoria=100
-        self.nombreArch="nombre Pred"
+        self.nombreArch="Luis Eduardo O"
         self.arch=""
-    
+        self.acumulador="Por:"
+        self.pc="Cod= 0917524"
+        self.OK=True
     def get(self, request, *args, **kwargs):
         elementos = Archivo.objects.all()
         
@@ -71,17 +72,19 @@ class VistaPrincipal(CreateView):
 
         # una vez cargado el archivo se verifica si la Sintaxis esta bien
         sixCH=sintax(self.arch)
+        self.arch=sixCH.ch
         if sixCH.OK:
-
+            self.OK=True
+            self.acumulador=0
+            self.pc=0
             self.Errores.append("No hay errores de compilacion")
             W=self.paraFront()
             return render(request, self.template_name,W) 
         else:
+            self.OK=False
             self.Errores.extend(sixCH.errors)
             W=self.paraFront()
             return render(request, self.template_name,W) 
-
-        
 
     def paraFront(self):
         numKernels=[]
@@ -91,17 +94,17 @@ class VistaPrincipal(CreateView):
         numMemorias.extend(range(self.kernel+1, self.memoria+1))
         
         return  {
+                'acumulador':self.acumulador,
+                'pc':self.pc,
                 'memoria':self.memoria,
                 'kernel':self.kernel,
                 'errores':self.Errores,
                 'nombre':self.nombreArch,
-                'numRestante': numMemorias, 
+                'MemoriaLibre': numMemorias, 
                 'numKernels': numKernels
                 }
 
     def get_object(self, queryset=None):
-        #recuperar el objeto que se va a editar
-        #profile, created= ArchivosCh.objects.get_or_create()
         profile, created= Archivo.objects.get_or_create()
         return profile  
 
@@ -121,16 +124,38 @@ class VistaPrincipal(CreateView):
 class vistaEjecucion(VistaPrincipal):
     def __init__(self):
         super().__init__()
-        self.pantalla=[]
 
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
-        print(self.memoria)
-        print(self.kernel)
-        print(self.Errores)
-        ejecutar(self.arch).run()
-
-
-        return render(request, self.template_name,super().paraFront())
-    def paraFront(self):
+        if self.OK:
+            chEjec=ejecutar(self.arch,self.kernel,self.memoria)
+            self.acumulador=chEjec.acumulador
+            self.Errores.extend(chEjec.errors)
+            return render(request, self.template_name,self.paraFrontEje(chEjec))
+        else:
+            self.Errores.append("no se puede ejecutar tiene errores de ejecucion")
+            return render(request, self.template_name,self.paraFront())
+       
+    
+    def paraFrontEje(self,chEjec):
         resp=super().paraFront()
+        numMemorias=[]
+        numMemorias.extend(range(self.kernel+1+chEjec.posMem, self.memoria+1))
+        resp['MemoriaLibre']=numMemorias
+        resp['Memoria']=enumerate(chEjec.Memoria,self.kernel+1)
+        resp['Memoria2']=enumerate(chEjec.Memoria,self.kernel+1)
+        aux=[]
+        aux.append(chEjec.posVar)
+        aux.append(chEjec.variables)
+        aux=np.column_stack(aux)
+        resp['Variables']=aux
+        aux=[]
+        aux.append(chEjec.posEt)
+        aux.append(chEjec.etiquetas)
+        aux=np.column_stack(aux)
+        resp['Etiquetas']=aux
+        resp['INS']=len(chEjec.arch)
+        resp['RB']=self.kernel+1
+        resp['RLC']=len(chEjec.arch)+self.kernel
+        resp['RLP']=len(chEjec.Memoria)+self.kernel
+        return resp

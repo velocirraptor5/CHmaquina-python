@@ -22,7 +22,7 @@
         <div class="card">
             <div class="row row1 justify-content-around">
                 <div class="text">Acumulador</div>
-                <div class="text">xxxx</div>
+                <div class="text">{{acumulador}}</div>
             </div>
             <div class="row row2 justify-content-around">
                 <div class="text">Programa</div>
@@ -30,7 +30,7 @@
             </div>
             <div class="row row3 justify-content-around">
                 <div class="text">Pc</div>
-                <div class="text">9999</div>
+                <div class="text">{{pc}}</div>
             </div>
         </div>
     </div>
@@ -40,22 +40,16 @@
         <div class="card">
             <table class="table table-striped table-borderless table-hover">
                 <tbody class="overflow-auto">
+                {% for numM,M in Memoria2 %}
                     <tr>
                         <td>
-                            <div class="text text-center">0016</div>
+                            <div class="text text-center"> {{numM}} </div>
                         </td>
                         <td>
-                            <div class="text text-center">xxxxx</div>
+                            <div class="text text-center"> {{M}} </div>
                         </td>
                     </tr>
-                    <tr>
-                        <td>
-                            <div class="text text-center">0017</div>
-                        </td>
-                        <td>
-                            <div class="text text-center">xxxxx</div>
-                        </td>
-                    </tr>
+                {% endfor %}   
                 </tbody>
             </table>
         </div>
@@ -74,14 +68,16 @@
                     </tr>
                 </thead>
                 <tbody class="overflow-auto">
+                {% for numV,V in Variables %}
                     <tr>
                         <td>
-                            <div class="text text-center">0016</div>
+                            <div class="text text-center">{{numV}}</div>
                         </td>
                         <td>
-                            <div class="text text-center">xxxxx</div>
+                            <div class="text text-center">{{V}}</div>
                         </td>
                     </tr>
+                {% endfor %}
                 </tbody>
             </table>            
         </div>
@@ -98,14 +94,16 @@
                     </tr>
                 </thead>
                 <tbody class="overflow-auto">
+                {% for posE,E in Etiquetas %}
                     <tr>
                         <td>
-                            <div class="text text-center">0016</div>
+                            <div class="text text-center"> {{posE}} </div>
                         </td>
                         <td>
-                            <div class="text text-center">xxxxx</div>
+                            <div class="text text-center"> {{E}} </div>
                         </td>
                     </tr>
+                {% endfor %}
                 </tbody>
             </table>
         </div>
@@ -143,19 +141,19 @@
                             <div class="text text-center">0000</div>
                         </td>
                         <td>
-                            <div class="text text-center">xxxxxxxxx.ch</div>
+                            <div class="text text-center"> {{nombre}} </div>
                         </td>
                         <td>
-                            <div class="text text-center">xxxxx</div>
+                            <div class="text text-center"> {{INS}} </div>
                         </td>
                         <td>
-                            <div class="text text-center">xxxxx</div>
+                            <div class="text text-center">{{RB}}</div>
                         </td>
                         <td>
-                            <div class="text text-center">xxxxx</div>
+                            <div class="text text-center">{{RLC}}</div>
                         </td>
                         <td>
-                            <div class="text text-center">xxxxx</div>
+                            <div class="text text-center">{{RLP}}</div>
                         </td>
                     </tr>
                 </tbody>

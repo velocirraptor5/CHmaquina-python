@@ -18,7 +18,7 @@
                     <!--<a class="nav-link" href="#">Abrir</a>-->
                     <form id="formularioprin" name="formularioprinc" action="" method="post" enctype="multipart/form-data">{% csrf_token %}
                         <input type="file" name="archivo" id="subirArchivoCh" accept=".ch" style="display : none;" required >
-                        <a class="nav-item nav-link" id="btnAbrir" onclick="actionOpen()" >Abrir</a> <!--boton abrir-->
+                        <a class="nav-item nav-link" id="btnAbrir" href="{% url 'home' %}" onclick="actionOpen()" >Abrir</a> <!--boton abrir-->
                         <input type="submit" value="Subir" id="btnUp"  class="btnsubir nav-item nav-link" > <!--boton subir-->
 	                </form>
                 </li>

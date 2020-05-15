@@ -42,7 +42,21 @@
                     </td>
                 </tr>
             {% endfor %}
-            {% for w in numRestante %}    
+            
+            {% for numM,M in Memoria %}    
+                <tr><!--Memoria libre-->
+                    <td>
+                        <img src="{% static 'core/img/lobo.png'%}" class="responsive-img" alt="logo" height="30" width="30">
+                    </td>
+                    <td>
+                        <div class="text">{{numM}}</div>
+                    </td>
+                    <td>
+                        <div class="text"> {{M}} </div>
+                    </td>
+                </tr>
+            {% endfor %}
+            {% for w in MemoriaLibre %}    
                 <tr><!--Memoria libre-->
                     <td>
                         <img src="{% static 'core/img/lobo.png'%}" class="responsive-img" alt="logo" height="30" width="30">
@@ -51,7 +65,7 @@
                         <div class="text">{{w}}</div>
                     </td>
                     <td>
-                        <div class="text"></div>
+                        <div class="text"> --- </div>
                     </td>
                 </tr>
             {% endfor %}
