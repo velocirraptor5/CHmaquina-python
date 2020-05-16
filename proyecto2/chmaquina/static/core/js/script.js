@@ -14,9 +14,12 @@ $(document).ready(function () {
     });
     let bandera = true;
     this.showHidden = function () {
-        if (bandera) {
+        console.log("sowhiden")
+        if (bandera ) {
             $('.columna3').removeClass('hidden');
+
         } else {
+            console.log("entro al else")
             $('.columna3').addClass('hidden');
         }
         bandera = !bandera;

@@ -7,13 +7,21 @@
             <div class="row row1 justify-content-between">
                 <div class="text">Memoria</div>
                 <div class="Cajon">
+                {% if modoKernel %}
+                    <input type="number" id="memoK" name="memoK" min="1" max="9999" value={{memoria}} style="width: 50px " form ="formMem">
+                {% else %} 
                     <input type="number" id="memoria" name="memoria" min="1" max="9999" value={{memoria}} style="width: 50px" form ="formularioprin">
+                {% endif %}
                 </div>
             </div>
             <div class="row row2 justify-content-between d-flex align-items-end">
                 <div class="text">Kernel</div>
                 <div class="Cajon">
+                {% if modoKernel %}
+                    <input type="number" id="kerK" name="kerK" min="1" max="100" value={{kernel}} style="width: 50px" form ="formMem">
+                {% else %}
                     <input type="number" id="kernel" name="kernel" min="1" max="100" value={{kernel}} style="width: 50px" form ="formularioprin">
+                {% endif %}
                 </div>
             </div>
         </div>

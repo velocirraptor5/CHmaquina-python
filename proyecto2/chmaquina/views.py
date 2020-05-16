@@ -5,9 +5,10 @@ from django.shortcuts import render
 from django.views.generic.edit import UpdateView, CreateView
 from django.core.files import File
 from django.urls import reverse_lazy
-from .models import Archivo
+from .models import Archivo,Kernel
 from .verSintax import sintax
 from .ejecucion import ejecutar
+from django.urls import path
 import numpy as np
 
 class VistaPrincipal(CreateView):
@@ -19,6 +20,7 @@ class VistaPrincipal(CreateView):
     template_name = "core/base.html" 
     def __init__(self):
         self.Errores=[]
+        self.nombres=[]
         self.kernel=9
         self.memoria=100
         self.nombreArch="Luis Eduardo O"
@@ -26,82 +28,82 @@ class VistaPrincipal(CreateView):
         self.acumulador="Por:"
         self.pc="Cod= 0917524"
         self.OK=True
+        self.modoKernel=False
     def get(self, request, *args, **kwargs):
         elementos = Archivo.objects.all()
-        
-        try:
-            #ya se subio algun elemento a la base de datos
-            elemento = list(elementos)[-1]
-            
-        except:
-            #no se ha cargado nada a la base de datos
+        print(elementos)
+        if list(elementos)==[]:
             self.Errores.append("Bienvenido a CH maquina")
+            self.modoKernel=True
             W=self.paraFront()
-            return  render(request, self.template_name,W) 
-        
-        memoria= elemento.memoria
-        kernel = elemento.kernel
-        #con prueba de que memoria y kernel sean numeros
-        try:
-            self.memoria= int(memoria) 
-            self.kernel= int(kernel) 
-        except:
-            self.Errores.append("Error en la difinicion de la memoria y/o el kernel se asignan los valores defecto")
-        
+            return  render(request, self.template_name,W)
+        #ya se subio algun elemento a la base de datos
+        memoria= elementos[0].memoria
+        kernel = elementos[0].kernel
+        for elemento in elementos:
+            #con prueba de que memoria y kernel sean numeros
+            try:
+                self.memoria= int(memoria) 
+                self.kernel= int(kernel) 
+            except:
+                self.Errores.append("Error en la difinicion de la memoria y/o el kernel se asignan los valores defecto")
+                W=self.paraFront()
+                return render(request, self.template_name,W)
+            # aquí se verifica cuanta memoria disponible hay (kernel - acumulador - total memoria)
+            if not (kernel<memoria):
+                self.Errores.append("la cantidad de memoria es insuficiente se le agregara memoria")
+                self.memoria=self.kernel+3 
 
-        if not (kernel<memoria):
-            self.Errores.append("la cantidad de memoria es insuficiente se le agregara memoria")
-            self.memoria=self.kernel+3 
-
-         # aquí se verifica cuanta memoria disponible hay (kernel - acumulador - total memoria)
-        try:
-            self.nombreArch = list((str(elemento.archivo).split('/')))[1]    
-        except:
-            self.nombreArch = "ERROR"
-            self.Errores.append("Error en la busqueda del archivo")
-            W=self.paraFront()
-            return render(request, self.template_name,W) 
+            try:
+                self.nombreArch = list((str(elemento.archivo).split('/')))[1]    
+                self.nombres.append(self.nombreArch)
+            except:
+                self.nombreArch = "ERROR"
+                self.Errores.append("Error en la busqueda del archivo")
+                W=self.paraFront()
+                return render(request, self.template_name,W) 
         
-        #se verifica que el archivo sea legible
-        ok=self.leerch()
-        if ok:
-            pass
-        else:
-            W=self.paraFront()
-            return render(request, self.template_name,W) 
+            #se verifica que el archivo sea legible
+            ok=self.leerch()
+            if not ok:
+                W=self.paraFront()
+                return render(request, self.template_name,W) 
 
-        # una vez cargado el archivo se verifica si la Sintaxis esta bien
-        sixCH=sintax(self.arch)
-        self.arch=sixCH.ch
-        if sixCH.OK:
-            self.OK=True
-            self.acumulador=0
-            self.pc=0
-            self.Errores.append("*****No hay errores de compilacion*****")
-            W=self.paraFront()
-            return render(request, self.template_name,W) 
-        else:
-            self.OK=False
-            self.Errores.extend(sixCH.errors)
-            W=self.paraFront()
-            return render(request, self.template_name,W) 
+            # una vez cargado el archivo se verifica si la Sintaxis esta bien
+            sixCH=sintax(self.arch)
+            self.arch=sixCH.ch
+            if sixCH.OK:
+                self.OK=self.OK and True
+                self.Errores.append("*****No hay errores de compilacion*****")
+                self.Errores.append("***** en el archivo "+str(self.nombreArch)+"*****") 
+            else:
+                self.OK=False
+                self.Errores.append("*****Se encontraron errores en el archivo:*****")
+                self.Errores.append("*****"+str(self.nombreArch)+"*****")
+                self.Errores.extend(sixCH.errors)
+                W=self.paraFront()
+                return render(request, self.template_name,W)
+
+        W=self.paraFront()
+        return render(request, self.template_name,W)
 
     def paraFront(self):
         numKernels=[]
         numMemorias=[]
         
         numKernels.extend(range(1,self.kernel+1))
-        numMemorias.extend(range(self.kernel+1, self.memoria+1))
+        numMemorias.extend(range(self.kernel+1, self.memoria))
         
         return  {
-                'acumulador':self.acumulador,
-                'pc':self.pc,
                 'memoria':self.memoria,
                 'kernel':self.kernel,
                 'errores':self.Errores,
                 'nombre':self.nombreArch,
                 'MemoriaLibre': numMemorias, 
-                'numKernels': numKernels
+                'numKernels': numKernels,
+                'pc':self.pc,
+                'acumulador':self.acumulador,
+                'modoKernel':self.modoKernel
                 }
 
     def get_object(self, queryset=None):
@@ -135,16 +137,18 @@ class vistaEjecucion(VistaPrincipal):
                 pass
             else:
                 pass
-            return render(request, self.template_name,self.paraFrontEje(chEjec))
         else:
             self.Errores.append("no se puede ejecutar tiene errores de ejecucion")
             return render(request, self.template_name,self.paraFront())
-       
+        
+        return render(request, self.template_name,self.paraFrontEje(chEjec))
     
     def paraFrontEje(self,chEjec):
         resp=super().paraFront()
+        resp['acumulador']=self.acumulador
+        resp['pc']=self.pc
         numMemorias=[]
-        numMemorias.extend(range(self.kernel+1+chEjec.posMem, self.memoria+1))
+        numMemorias.extend(range(self.kernel+1+chEjec.posMem, self.memoria))
         resp['MemoriaLibre']=numMemorias
         resp['Memoria']=enumerate(chEjec.Memoria,self.kernel+1)
         resp['Memoria2']=enumerate(chEjec.Memoria,self.kernel+1)
@@ -165,3 +169,52 @@ class vistaEjecucion(VistaPrincipal):
         resp['Pantalla']=chEjec.mostrar
         resp['Impresora']=chEjec.imprimir
         return resp
+
+
+class vistaMemoria(CreateView):
+    model = Kernel
+    fields = ['memoK','kerK']
+    success_url= reverse_lazy('memoria')
+    template_name = "core/base.html" 
+    def __init__(self):
+        self.memoria=100
+        self.kernel=9
+        self.nombreArch="Luis Eduardo O"
+        self.modoKernel=True
+        self.Errores=["Bienvenido a CH maquina","RRRRRRRRRRRRRRR"]
+
+    def get(self, request, *args, **kwargs):
+        elementoK = Kernel.objects.all()
+         
+        try:
+            print(i for i in elementoK)
+            elementoK = elementoK[-1]
+            print("algo existe")
+            self.memoria=int( elementoK.memoK)
+            print("al menos coje algo")
+            self.kernel=int(elementoK.kerK)
+        except:
+            self.Errores.append("no fue capa de sacar el kernel")
+        w=self.paraFrontMem()
+        return render(request, self.template_name,w)
+
+    def get_object(self, queryset=None):
+        profile, created= Kernel.objects.get_or_create()
+        return profile 
+
+    def paraFrontMem(self):
+        numKernels=[]
+        numMemorias=[]
+        
+        numKernels.extend(range(1,self.kernel+1))
+        numMemorias.extend(range(self.kernel+1, self.memoria))
+        
+        return  {
+                'memoria':self.memoria,
+                'kernel':self.kernel,
+                'errores':self.Errores,
+                'nombre':self.nombreArch,
+                'MemoriaLibre': numMemorias, 
+                'numKernels': numKernels,
+                'modoKernel':self.modoKernel
+                }

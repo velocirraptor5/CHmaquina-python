@@ -21,7 +21,6 @@ from django.conf import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    #path('',views.saludo,name="home"),
     path('', include('chmaquina.urls')),
 ]
 
