@@ -11,6 +11,10 @@ from .ejecucion import ejecutar
 from django.urls import path
 from django.shortcuts import redirect
 import numpy as np
+import sqlite3
+from sqlite3 import Error
+from django.db import connection
+
 
 class VistaPrincipal(CreateView):
     model = Archivo
@@ -228,3 +232,16 @@ class vistaMemoria(CreateView):
                 'pc':self.pc,
                 'acumulador':self.acumulador
                 }
+
+class Salir(VistaPrincipal):
+    def __init__(self):
+        super().__init__()
+
+    def get(self, request, *args, **kwargs):
+        #database = r"C:\sqlite\db\pythonsqlite.db"
+
+        # create a database connection
+        with connection.cursor() as conn:
+            conn.execute("DELETE FROM 'chmaquina_Kernel'")
+            conn.execute("DELETE FROM 'chmaquina_archivo'")
+            return redirect('home')
