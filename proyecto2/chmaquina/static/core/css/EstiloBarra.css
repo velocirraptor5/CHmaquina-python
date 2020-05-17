@@ -11,7 +11,10 @@
     font-size: 20px;
     color: black;
 }
-
+.nav-linSub{
+    background-color: transparent;
+    border: transparent;
+}
 .navbar-nav,
 .mr-auto {
 flex: 1;

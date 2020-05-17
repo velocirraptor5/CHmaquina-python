@@ -9,7 +9,11 @@
   <div class="col columna2">
      {% include "core/columnas/columna2.html" %}
   </div>
+  {% if modoKernel %}
+  <div class="col columna3">
+  {% else %}
   <div class="col columna3 hidden">
+  {% endif %}
     <div class="card">
       {% include "core/columnas/columna3.html" %}
     </div>

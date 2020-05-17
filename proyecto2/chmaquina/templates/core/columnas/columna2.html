@@ -15,7 +15,11 @@
 <div class="card Modo ">
     <div class="row row1 justify-content-center d-flex align-items-center">
         <div class="text ">
+            {% if modoKernel %}
             <b>Modo Kernel</b>
+            {% else %}
+            <b>Modo Usuario</b>
+            {% endif %}
         </div>
     </div>
 </div>

@@ -9,11 +9,14 @@ from .models import Archivo,Kernel
 from .verSintax import sintax
 from .ejecucion import ejecutar
 from django.urls import path
+from django.shortcuts import redirect
 import numpy as np
 
 class VistaPrincipal(CreateView):
     model = Archivo
+    model2=  Kernel
     fields = ['archivo', 'memoria','kernel']
+    fields2=['memoK','kerK']
     
 
     success_url= reverse_lazy('home')
@@ -31,29 +34,36 @@ class VistaPrincipal(CreateView):
         self.modoKernel=False
     def get(self, request, *args, **kwargs):
         elementos = Archivo.objects.all()
-        print(elementos)
         if list(elementos)==[]:
             self.Errores.append("Bienvenido a CH maquina")
             self.modoKernel=True
             W=self.paraFront()
             return  render(request, self.template_name,W)
+            #return redirect('memoria')
         #ya se subio algun elemento a la base de datos
         memoria= elementos[0].memoria
         kernel = elementos[0].kernel
-        for elemento in elementos:
-            #con prueba de que memoria y kernel sean numeros
+        #con prueba de que memoria y kernel sean numeros
+        try:
+            self.memoria= int(memoria) 
+            self.kernel= int(kernel) 
+        except:
             try:
-                self.memoria= int(memoria) 
-                self.kernel= int(kernel) 
+                elementoK = Kernel.objects.all()
+                elemK = list(elementoK)[-1]
+                self.memoria=int(elemK.memoK)
+                self.kernel=int(elemK.kerK)
             except:
+                self.Errores.append("no fue capa de sacar el kernel")
                 self.Errores.append("Error en la difinicion de la memoria y/o el kernel se asignan los valores defecto")
                 W=self.paraFront()
                 return render(request, self.template_name,W)
-            # aquí se verifica cuanta memoria disponible hay (kernel - acumulador - total memoria)
-            if not (kernel<memoria):
-                self.Errores.append("la cantidad de memoria es insuficiente se le agregara memoria")
-                self.memoria=self.kernel+3 
+        # aquí se verifica cuanta memoria disponible hay (kernel - acumulador - total memoria)
+        if not (self.kernel<self.memoria):
+            self.Errores.append("la cantidad de memoria es insuficiente se le agregara memoria")
+            self.memoria=self.kernel+3 
 
+        for elemento in elementos:
             try:
                 self.nombreArch = list((str(elemento.archivo).split('/')))[1]    
                 self.nombres.append(self.nombreArch)
@@ -181,18 +191,16 @@ class vistaMemoria(CreateView):
         self.kernel=9
         self.nombreArch="Luis Eduardo O"
         self.modoKernel=True
-        self.Errores=["Bienvenido a CH maquina","RRRRRRRRRRRRRRR"]
+        self.Errores=["Bienvenido a CH maquina"]
+        self.acumulador="Por:"
+        self.pc="Cod= 0917524"
 
     def get(self, request, *args, **kwargs):
         elementoK = Kernel.objects.all()
-         
         try:
-            print(i for i in elementoK)
-            elementoK = elementoK[-1]
-            print("algo existe")
-            self.memoria=int( elementoK.memoK)
-            print("al menos coje algo")
-            self.kernel=int(elementoK.kerK)
+            elemK = list(elementoK)[-1]
+            self.memoria=int(elemK.memoK)
+            self.kernel=int(elemK.kerK)
         except:
             self.Errores.append("no fue capa de sacar el kernel")
         w=self.paraFrontMem()
@@ -216,5 +224,7 @@ class vistaMemoria(CreateView):
                 'nombre':self.nombreArch,
                 'MemoriaLibre': numMemorias, 
                 'numKernels': numKernels,
-                'modoKernel':self.modoKernel
+                'modoKernel':self.modoKernel,
+                'pc':self.pc,
+                'acumulador':self.acumulador
                 }

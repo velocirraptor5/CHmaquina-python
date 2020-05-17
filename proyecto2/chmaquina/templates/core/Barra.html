@@ -16,8 +16,8 @@
             <ul class="navbar-nav mr-auto justify-content-between">
                 <li class="nav-item">
                     <!--<a class="nav-link" href="#">-->
-                    <form id="formularioprin" name="formularioprinc" action="" method="post" enctype="multipart/form-data">{% csrf_token %}
-                        <input type="file" name="archivo" id="subirArchivoCh" accept=".ch" style="display : none;">
+                    <form id="formularioprin" name="formularioprinc" action="{% url 'home' %}" method="post" enctype="multipart/form-data">{% csrf_token %}
+                        <input type="file" name="archivo" id="subirArchivoCh"  accept=".ch" style="display : none;" required>
                         <a class="nav-item nav-link" id="btnAbrir"  onclick="actionOpen()" >Abrir</a> <!--boton abrir-->
                         <input type="submit" value="Subir" id="btnUp" href="{% url 'home' %}"  class="btnsubir nav-item nav-link" > <!--boton subir-->
 	                </form>
@@ -28,9 +28,9 @@
                 </li>
                 <li class="nav-item">
                 {% if modoKernel %}
-                <form id="formMem" action="" name="formMem" method="post" >{% csrf_token %}
-                    <a class="nav-link" onclick="showHidden()" >Mostrar Memoria</a>
-                    <input type="submit" value="OK" href="{% url 'memoria' %}">
+                <!--<a class="nav-link" onclick="showHidden()" >Mostrar Memoria</a>-->
+                <form id="formMem" action="{% url 'memoria' %}" name="formMem" method="post" href="{% url 'memoria' %}" >{% csrf_token %}
+                    <input class="nav-link nav-linSub" type="submit" value="Mostrar Memoria" href="{% url 'memoria' %}">
                 </form>
                 {% else %}
                     <a class="nav-link" href="#" onclick="showHidden()">Mostrar Memoria</a>
