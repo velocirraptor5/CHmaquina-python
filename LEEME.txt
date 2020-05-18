@@ -1,0 +1,21 @@
+CHmaquina por : Luis Eduardo Ocampo Wilches
+cod:0917524
+ced:1010111852
+semestre:2020-1(el semestre de la cuarentena :( )
+materia: Sistemas Operativos
+
+NOTA:
+El siguiente ch maquina es echo con django, este programa nos permition enlazar el forntend echo con
+Boothstrap y el backend echo en Python 
+la vitacora se puede observar de mejor manera en el git ejecutando el codigo"git log"
+igualmente en el web personal 
+
+MANUAL DE INSTALACION
+1. desde el 
+
+MANUAL:
+1. inicialmente asigne los valores al kernel y memoria
+
+2. precione Mostrar Memoria para almacenar los valores que desea
+
+3. precione subir archivo  

@@ -28,20 +28,7 @@ class ejecutar:
 
         for linea in self.arch:
             linea=linea.split()
-            if linea[0] == "nueva":
-                self.posMem+=1
-                self.variables.append(linea[1])
-                self.tipoVar.append(linea[2])
-                if(len(linea)==4):
-                    self.Memoria.append(linea[3])
-                else:
-                    temp=['I','R','L']
-                    if linea[2] in temp:
-                        n=0
-                    if linea[2]=='C':
-                        n=' '
-                    self.Memoria.append(n)
-                self.posVar.append(self.posMem+self.kernel)
+            
             if linea[0]=="etiqueta":
                 self.etiquetas.append(linea[1])
                 self.posEt.append(int(linea[2])+self.kernel)
@@ -70,7 +57,7 @@ class ejecutar:
         elif tipo == "vayasi":
             self.vayasi(linea)
         elif tipo == "nueva":
-            return
+            self.nueva(linea)
         elif tipo == "etiqueta":
             return
         elif tipo == "lea":
@@ -134,12 +121,27 @@ class ejecutar:
 
         if(acumtemp>0):
             i=self.etiquetas.index(linea[1])
-            self.linea=self.arch[self.posEt[i]]
+            self.linea=self.arch[self.posEt[i]-self.kernel]
         if(acumtemp<0):
             i=self.etiquetas.index(linea[2])
-            self.linea=self.arch[self.posEt[i]]
+            self.linea=self.arch[self.posEt[i]-self.kernel]
         else:
             return
+
+    def nueva(self,linea):
+        self.posMem+=1
+        self.variables.append(linea[1])
+        self.tipoVar.append(linea[2])
+        if(len(linea)==4):
+            self.Memoria.append(linea[3])
+        else:
+            temp=['I','R','L']
+            if linea[2] in temp:
+                n=0
+            if linea[2]=='C':
+                n=' '
+            self.Memoria.append(n)
+        self.posVar.append(self.posMem+self.kernel)
 
     def lea(self,linea):
         self.noAcabe=True

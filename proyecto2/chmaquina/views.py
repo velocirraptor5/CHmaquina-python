@@ -14,6 +14,7 @@ import numpy as np
 import sqlite3
 from sqlite3 import Error
 from django.db import connection
+import os
 
 
 class VistaPrincipal(CreateView):
@@ -36,10 +37,30 @@ class VistaPrincipal(CreateView):
         self.pc="Cod= 0917524"
         self.OK=True
         self.modoKernel=False
+        self.INS=[]
+        self.RB=[]
+        self.RLC=[]
+        self.RLP=[]
+        self.Memoria=[]
+        self.posMem=0
+        self.Variables=[]
+        self.posVars=[]
+        self.Etiquetas=[]
+        self.posEtis=[]
+        self.mostrar=[]
+        self.imprimir=[]
+        
+
     def get(self, request, *args, **kwargs):
         elementos = Archivo.objects.all()
         if list(elementos)==[]:
             self.Errores.append("Bienvenido a CH maquina")
+            self.Errores.append("por:")
+            self.Errores.append("Luis Eduardo Ocampo Wilches")
+            self.Errores.append("cod:   0917524")
+            self.Errores.append("CC:    1010111852")
+            self.Errores.append("Agradecimientos a:")
+            self.Errores.append("Hans Rivera")
             self.modoKernel=True
             W=self.paraFront()
             return  render(request, self.template_name,W)
@@ -58,15 +79,16 @@ class VistaPrincipal(CreateView):
                 self.memoria=int(elemK.memoK)
                 self.kernel=int(elemK.kerK)
             except:
+                self.memoria=100
+                self.kernel=9
                 self.Errores.append("no fue capa de sacar el kernel")
                 self.Errores.append("Error en la difinicion de la memoria y/o el kernel se asignan los valores defecto")
-                W=self.paraFront()
-                return render(request, self.template_name,W)
+                self.Errores.append("Recuerda que para almacenar los datos de la memoria y kernel se debe precionar Mostrar Memoria")
         # aquí se verifica cuanta memoria disponible hay (kernel - acumulador - total memoria)
         if not (self.kernel<self.memoria):
             self.Errores.append("la cantidad de memoria es insuficiente se le agregara memoria")
             self.memoria=self.kernel+3 
-
+        self.posMem=self.kernel+1
         for elemento in elementos:
             try:
                 self.nombreArch = list((str(elemento.archivo).split('/')))[1]    
@@ -87,18 +109,41 @@ class VistaPrincipal(CreateView):
             sixCH=sintax(self.arch)
             self.arch=sixCH.ch
             if sixCH.OK:
-                self.OK=self.OK and True
+                self.OK=self.OK and sixCH
                 self.Errores.append("*****No hay errores de compilacion*****")
                 self.Errores.append("***** en el archivo "+str(self.nombreArch)+"*****") 
             else:
-                self.OK=False
+                self.OK=self.OK and sixCH
                 self.Errores.append("*****Se encontraron errores en el archivo:*****")
                 self.Errores.append("*****"+str(self.nombreArch)+"*****")
                 self.Errores.extend(sixCH.errors)
-                W=self.paraFront()
-                return render(request, self.template_name,W)
+                """W=self.paraFront()
+                return render(request, self.template_name,W)"""
+            if self.OK:
+                chEjec=ejecutar(self.arch,self.kernel,self.memoria)
+                self.acumulador=chEjec.acumulador
+                self.Errores.extend(chEjec.errors)
+                self.Memoria.extend(chEjec.Memoria)
+                self.Variables.extend(chEjec.variables)
+                self.posVars.extend(chEjec.posVar)
+                self.Etiquetas.extend(chEjec.etiquetas)
+                self.posEtis.extend(chEjec.posEt)
+                self.INS.append(len(chEjec.arch))
+                self.RB.append(self.posMem)
+                self.RLC.append(len(chEjec.arch)+self.posMem)
+                self.RLP.append(len(self.Memoria)+self.kernel)
+                self.mostrar.extend(chEjec.mostrar)
+                self.imprimir.extend(chEjec.imprimir)
+                if chEjec.noAcabe:
+                    pass
+                else:
+                    pass
+                self.posMem+=chEjec.posMem
+            else:
+                self.Errores.append("no se puede ejecutar"+str(self.nombreArch) + "tiene errores de ejecucion")
+                """return render(request, self.template_name,self.paraFront())"""
 
-        W=self.paraFront()
+        W=self.paraFrontEje()
         return render(request, self.template_name,W)
 
     def paraFront(self):
@@ -106,7 +151,7 @@ class VistaPrincipal(CreateView):
         numMemorias=[]
         
         numKernels.extend(range(1,self.kernel+1))
-        numMemorias.extend(range(self.kernel+1, self.memoria))
+        numMemorias.extend(range(self.kernel+1+self.posMem, self.memoria))
         
         return  {
                 'memoria':self.memoria,
@@ -117,8 +162,28 @@ class VistaPrincipal(CreateView):
                 'numKernels': numKernels,
                 'pc':self.pc,
                 'acumulador':self.acumulador,
-                'modoKernel':self.modoKernel
+                'modoKernel':self.modoKernel,
+                'INS':self.INS,
+                'RB':self.RB,
+                'RLC':self.RLC,
+                'RLP':self.RLP,
+                'Memoria':enumerate(self.Memoria),
+                'Memoria2':enumerate(self.Memoria)
                 }
+
+    def paraFrontEje(self):
+        resp=self.paraFront()
+        variables=[]
+        variables.append(self.posVars)
+        variables.append(self.Variables)
+        variables=np.column_stack(variables)
+        resp['Variables']=variables
+        etiquetas=[]
+        etiquetas.append(self.posEtis)
+        etiquetas.append(self.Etiquetas)
+        etiquetas=np.column_stack(etiquetas)
+        resp['Etiquetas']=etiquetas
+        return resp
 
     def get_object(self, queryset=None):
         profile, created= Archivo.objects.get_or_create()
@@ -143,7 +208,7 @@ class vistaEjecucion(VistaPrincipal):
 
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
-        if self.OK:
+        """if self.OK:
             chEjec=ejecutar(self.arch,self.kernel,self.memoria)
             self.acumulador=chEjec.acumulador
             self.Errores.extend(chEjec.errors)
@@ -154,34 +219,13 @@ class vistaEjecucion(VistaPrincipal):
         else:
             self.Errores.append("no se puede ejecutar tiene errores de ejecucion")
             return render(request, self.template_name,self.paraFront())
-        
-        return render(request, self.template_name,self.paraFrontEje(chEjec))
+        """
+        return render(request, self.template_name,self.paraFrontEje2())
     
-    def paraFrontEje(self,chEjec):
-        resp=super().paraFront()
-        resp['acumulador']=self.acumulador
-        resp['pc']=self.pc
-        numMemorias=[]
-        numMemorias.extend(range(self.kernel+1+chEjec.posMem, self.memoria))
-        resp['MemoriaLibre']=numMemorias
-        resp['Memoria']=enumerate(chEjec.Memoria,self.kernel+1)
-        resp['Memoria2']=enumerate(chEjec.Memoria,self.kernel+1)
-        aux=[]
-        aux.append(chEjec.posVar)
-        aux.append(chEjec.variables)
-        aux=np.column_stack(aux)
-        resp['Variables']=aux
-        aux=[]
-        aux.append(chEjec.posEt)
-        aux.append(chEjec.etiquetas)
-        aux=np.column_stack(aux)
-        resp['Etiquetas']=aux
-        resp['INS']=len(chEjec.arch)
-        resp['RB']=self.kernel+1
-        resp['RLC']=len(chEjec.arch)+self.kernel
-        resp['RLP']=len(chEjec.Memoria)+self.kernel
-        resp['Pantalla']=chEjec.mostrar
-        resp['Impresora']=chEjec.imprimir
+    def paraFrontEje2(self):
+        resp=super().paraFrontEje()
+        resp['Pantalla']=self.mostrar
+        resp['Impresora']=self.imprimir
         return resp
 
 
@@ -241,6 +285,10 @@ class Salir(VistaPrincipal):
         #database = r"C:\sqlite\db\pythonsqlite.db"
 
         # create a database connection
+        carpeta="media/bodega"
+        for archivo in os.listdir(carpeta):
+            os.remove(carpeta+'/'+archivo)
+        
         with connection.cursor() as conn:
             conn.execute("DELETE FROM 'chmaquina_Kernel'")
             conn.execute("DELETE FROM 'chmaquina_archivo'")
