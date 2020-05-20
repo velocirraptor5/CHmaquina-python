@@ -5,9 +5,9 @@ from django.shortcuts import render
 from django.views.generic.edit import UpdateView, CreateView
 from django.core.files import File
 from django.urls import reverse_lazy
-from .models import Archivo,Kernel
+from .models import Archivo,Kernel,Lea
 from .verSintax import sintax
-from .ejecucion import ejecutar
+from .ejecucion import ejecutar,chEjecguardado
 from django.urls import path
 from django.shortcuts import redirect
 import numpy as np
@@ -15,14 +15,16 @@ import sqlite3
 from sqlite3 import Error
 from django.db import connection
 import os
+import pickle
 
 
 class VistaPrincipal(CreateView):
     model = Archivo
     model2=  Kernel
+    model3 = Lea
     fields = ['archivo', 'memoria','kernel']
     fields2=['memoK','kerK']
-    
+    fields3 = ['lea']
 
     success_url= reverse_lazy('home')
     template_name = "core/base.html" 
@@ -32,6 +34,7 @@ class VistaPrincipal(CreateView):
         self.kernel=9
         self.memoria=100
         self.nombreArch="Luis Eduardo O"
+        self.ID=0
         self.arch=""
         self.acumulador="Por:"
         self.pc="Cod= 0917524"
@@ -42,13 +45,14 @@ class VistaPrincipal(CreateView):
         self.RLC=[]
         self.RLP=[]
         self.Memoria=[]
-        self.posMem=0
+        self.posMem=self.kernel+1
         self.Variables=[]
         self.posVars=[]
         self.Etiquetas=[]
         self.posEtis=[]
         self.mostrar=[]
         self.imprimir=[]
+        self.IDs=[]
         
 
     def get(self, request, *args, **kwargs):
@@ -81,18 +85,19 @@ class VistaPrincipal(CreateView):
             except:
                 self.memoria=100
                 self.kernel=9
-                self.Errores.append("no fue capa de sacar el kernel")
-                self.Errores.append("Error en la difinicion de la memoria y/o el kernel se asignan los valores defecto")
+                self.Errores.append("a la memoria y el kernel se asignan los valores defecto")
                 self.Errores.append("Recuerda que para almacenar los datos de la memoria y kernel se debe precionar Mostrar Memoria")
         # aquí se verifica cuanta memoria disponible hay (kernel - acumulador - total memoria)
         if not (self.kernel<self.memoria):
             self.Errores.append("la cantidad de memoria es insuficiente se le agregara memoria")
             self.memoria=self.kernel+3 
         self.posMem=self.kernel+1
+        self.acumulador=0
         for elemento in elementos:
             try:
                 self.nombreArch = list((str(elemento.archivo).split('/')))[1]    
                 self.nombres.append(self.nombreArch)
+                self.IDs.append(self.ID)
             except:
                 self.nombreArch = "ERROR"
                 self.Errores.append("Error en la busqueda del archivo")
@@ -113,14 +118,16 @@ class VistaPrincipal(CreateView):
                 self.Errores.append("*****No hay errores de compilacion*****")
                 self.Errores.append("***** en el archivo "+str(self.nombreArch)+"*****") 
             else:
-                self.OK=self.OK and sixCH
+                self.OK=False
                 self.Errores.append("*****Se encontraron errores en el archivo:*****")
                 self.Errores.append("*****"+str(self.nombreArch)+"*****")
                 self.Errores.extend(sixCH.errors)
                 """W=self.paraFront()
                 return render(request, self.template_name,W)"""
             if self.OK:
-                chEjec=ejecutar(self.arch,self.kernel,self.memoria)
+                
+                chEjec=ejecutar(self.arch,self.kernel,self.memoria,self.acumulador,self.ID)
+                self.pc=chEjec.linea
                 self.acumulador=chEjec.acumulador
                 self.Errores.extend(chEjec.errors)
                 self.Memoria.extend(chEjec.Memoria)
@@ -134,15 +141,16 @@ class VistaPrincipal(CreateView):
                 self.RLP.append(len(self.Memoria)+self.kernel)
                 self.mostrar.extend(chEjec.mostrar)
                 self.imprimir.extend(chEjec.imprimir)
-                if chEjec.noAcabe:
-                    pass
-                else:
-                    pass
                 self.posMem+=chEjec.posMem
+                if chEjec.noAcabe:
+                    print("en el no acabe de self.ok")
+                    self.guardar(self.paraFrontEje())
+                    W=self.paraFrontEjecNoFin(chEjec.varLeer)
+                    return render(request,self.template_name,W)
+                self.ID+=1
             else:
-                self.Errores.append("no se puede ejecutar"+str(self.nombreArch) + "tiene errores de ejecucion")
-                """return render(request, self.template_name,self.paraFront())"""
-
+                self.Errores.append("no se puede ejecutar "+str(self.nombreArch) + " tiene errores de ejecucion")
+                return render(request, self.template_name,self.paraFront())
         W=self.paraFrontEje()
         return render(request, self.template_name,W)
 
@@ -151,8 +159,7 @@ class VistaPrincipal(CreateView):
         numMemorias=[]
         
         numKernels.extend(range(1,self.kernel+1))
-        numMemorias.extend(range(self.kernel+1+self.posMem, self.memoria))
-        
+        numMemorias.extend(range(self.posMem, self.memoria))
         return  {
                 'memoria':self.memoria,
                 'kernel':self.kernel,
@@ -163,27 +170,43 @@ class VistaPrincipal(CreateView):
                 'pc':self.pc,
                 'acumulador':self.acumulador,
                 'modoKernel':self.modoKernel,
-                'INS':self.INS,
-                'RB':self.RB,
-                'RLC':self.RLC,
-                'RLP':self.RLP,
-                'Memoria':enumerate(self.Memoria),
-                'Memoria2':enumerate(self.Memoria)
+                'Memoria':enumerate(self.Memoria,self.kernel+1),
+                'Memoria2':enumerate(self.Memoria,self.kernel+1)
                 }
 
     def paraFrontEje(self):
+        
         resp=self.paraFront()
         variables=[]
         variables.append(self.posVars)
         variables.append(self.Variables)
+        print(variables)
         variables=np.column_stack(variables)
         resp['Variables']=variables
+        
         etiquetas=[]
         etiquetas.append(self.posEtis)
         etiquetas.append(self.Etiquetas)
         etiquetas=np.column_stack(etiquetas)
         resp['Etiquetas']=etiquetas
+        
+        programas=[]
+        programas.append(self.IDs)
+        programas.append(self.nombres)
+        programas.append(self.INS)
+        programas.append(self.RB)
+        programas.append(self.RLC)
+        programas.append(self.RLP)
+        programas=np.column_stack(programas)
+        resp['Programas']=programas
         return resp
+    
+    def paraFrontEjecNoFin(self,lea):
+        resp=self.paraFrontEje()
+        resp['ModalActivado']=True
+        resp['lea']=lea
+        return resp
+
 
     def get_object(self, queryset=None):
         profile, created= Archivo.objects.get_or_create()
@@ -201,25 +224,21 @@ class VistaPrincipal(CreateView):
         except :
             self.Errores.append("no se puede abrir el archivo porfavor verificar el formato")
             return False 
+    
+    def guardar(self,resp):
+        with open('media/bodega/chEjeRESP.pkl','wb') as output:
+            pickle.dump(resp,output,pickle.HIGHEST_PROTOCOL)
 
+  
 class vistaEjecucion(VistaPrincipal):
     def __init__(self):
         super().__init__()
 
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
-        """if self.OK:
-            chEjec=ejecutar(self.arch,self.kernel,self.memoria)
-            self.acumulador=chEjec.acumulador
-            self.Errores.extend(chEjec.errors)
-            if chEjec.noAcabe:
-                pass
-            else:
-                pass
-        else:
-            self.Errores.append("no se puede ejecutar tiene errores de ejecucion")
+        if not self.OK:
+            self.Errores.append("no se puede ejecutar"+str(self.nombreArch) + "tiene errores de ejecucion")
             return render(request, self.template_name,self.paraFront())
-        """
         return render(request, self.template_name,self.paraFrontEje2())
     
     def paraFrontEje2(self):
@@ -292,4 +311,90 @@ class Salir(VistaPrincipal):
         with connection.cursor() as conn:
             conn.execute("DELETE FROM 'chmaquina_Kernel'")
             conn.execute("DELETE FROM 'chmaquina_archivo'")
+            conn.execute("DELETE FROM 'chmaquina_lea'")
             return redirect('home')
+
+
+class terminarEjec(VistaPrincipal):
+    model = Lea
+    fields = ['lea']
+    success_url= reverse_lazy('lea')
+    template_name = "core/base.html" 
+    def __init__(self):
+        super().__init__()
+    
+    def get(self, request, *args, **kwargs):
+        visSave=chEjecguardado("RESP")
+        self.actualizar(visSave)
+        chEjec=chEjecguardado()
+        DBlea=Lea.objects.all()
+        print(chEjec.linea)
+        print(DBlea)
+        valLea=list(DBlea)[-1]
+        linea=chEjec.linea.split()
+        chEjec.almacene(linea,valLea.lea)
+        chEjec.noAcabe=False
+        tempErr=[err for err in self.Errores if err not in chEjec.errors]
+        self.Errores=tempErr
+        tempMem=[mem for mem in self.Memoria if mem not in chEjec.Memoria]
+        self.Memoria=tempMem
+        tempVar=[var for var in self.Variables if var not in chEjec.variables]
+        self.Variables=tempVar
+        temposVar=[posVar for posVar in self.posVars if posVar not in chEjec.posVar]
+        self.posVars=temposVar
+        tempEtis=[eti for eti in self.Etiquetas if eti not in chEjec.etiquetas]
+        self.Etiquetas=tempEtis
+        tempposEti=[posEti for posEti in self.posEtis if posEti not in chEjec.posEt]
+        self.posEtis=tempposEti
+        tempmos=[mos for mos in self.mostrar if mos not in chEjec.mostrar]
+        self.mostrar=tempmos
+        tempimp=[imp for imp in self.imprimir if imp not in chEjec.imprimir]
+        self.imprimir=tempimp
+        self.posMem-=chEjec.posMem
+
+        chEjec.lineaAlinea()
+        self.pc=chEjec.linea
+        self.acumulador=chEjec.acumulador
+        self.Errores.extend(chEjec.errors)
+        self.Memoria.extend(chEjec.Memoria)
+        self.Variables.extend(chEjec.variables)
+        self.posVars.extend(chEjec.posVar)
+        self.Etiquetas.extend(chEjec.etiquetas)
+        self.posEtis.extend(chEjec.posEt)
+        self.mostrar.extend(chEjec.mostrar)
+        self.imprimir.extend(chEjec.imprimir)
+        self.posMem+=chEjec.posMem
+        if chEjec.noAcabe:
+            W=self.paraFrontEjecNoFin(chEjec.varLeer)
+            return render(request,self.template_name,W)
+        W=self.paraFrontEje()
+        return render(request, self.template_name,W)
+    
+    def actualizar(self,resp):
+        self.memoria=resp['memoria']
+        self.kernel=resp['kernel']
+        self.Errores=resp['errores']
+        self.nombreArch=resp['nombre']
+        self.posMem=resp['MemoriaLibre'][0] 
+        self.pc=resp['pc']
+        self.acumulador=resp['acumulador']
+        self.modoKernel=resp['modoKernel']
+        temp=resp['Memoria']
+        for num,mem in temp:
+            self.Memoria.append(mem)
+        
+        for posVar,Var in resp['Variables']:
+            self.posVars.append(int(posVar))
+            self.Variables.append(Var)
+        
+        for posET,Eti in resp['Etiquetas']:
+            self.posEtis.append(int(posET))
+            self.Etiquetas.append(Eti)
+        
+        for ID,Nom,ins,rb,rlc,rlp in resp['Programas']:
+            self.IDs.append(ID)
+            self.nombres.append(Nom)
+            self.INS.append(ins)
+            self.RB.append(rb)
+            self.RLC.append(rlc)
+            self.RLP.append(rlp)

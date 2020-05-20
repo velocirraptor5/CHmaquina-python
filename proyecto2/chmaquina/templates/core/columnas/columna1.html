@@ -144,12 +144,13 @@
                     </tr>
                 </thead>
                 <tbody class="overflow-auto">
+                {% for ID,Nom,INS,RB,RLC,RLP in Programas %}
                     <tr>
                         <td>
-                            <div class="text text-center">0000</div>
+                            <div class="text text-center">{{ID}}</div>
                         </td>
                         <td>
-                            <div class="text text-center"> {{nombre}} </div>
+                            <div class="text text-center"> {{Nom}} </div>
                         </td>
                         <td>
                             <div class="text text-center"> {{INS}} </div>
@@ -164,6 +165,7 @@
                             <div class="text text-center">{{RLP}}</div>
                         </td>
                     </tr>
+                {% endfor %}
                 </tbody>
             </table>
         </div>

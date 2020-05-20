@@ -23,10 +23,10 @@
                     <img src="{% static 'core/img/logo.png'%}" class="responsive-img" alt="logo" height="30" width="30">
                 </td>
                 <td>
-                    <div class="text">0000</div>
+                    <div class="text">0</div>
                 </td>
                 <td>
-                    <div class="text">xxxxx</div>
+                    <div class="text"> {{acumulador}} </div>
                 </td>
             </tr>
             {% for w in numKernels%}
@@ -56,13 +56,13 @@
                     </td>
                 </tr>
             {% endfor %}
-            {% for w in MemoriaLibre %}    
+            {% for ML in MemoriaLibre %}    
                 <tr><!--Memoria libre-->
                     <td>
-                        <img src="{% static 'core/img/lobo.png'%}" class="responsive-img" alt="logo" height="30" width="30">
+                        <img src="{% static 'core/img/raptor.png'%}" class="responsive-img" alt="logo" height="30" width="30">
                     </td>
                     <td>
-                        <div class="text">{{w}}</div>
+                        <div class="text">{{ML}}</div>
                     </td>
                     <td>
                         <div class="text"> --- </div>

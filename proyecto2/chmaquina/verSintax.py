@@ -19,6 +19,10 @@ class sintax:
         #se miran todas las etiqutas
         for linea in (self.ch):
             linea=linea.split()
+            if linea==[]:
+                self.errors.append("no hay nada en el archivo")
+                self.OK=False
+                return
             if linea[0]=="etiqueta":
                 self.OK= self.etiqueta(linea)
         #Cuando ya se tienen las etiquetas se verifica la sintaxis linea por linea
@@ -74,7 +78,7 @@ class sintax:
             return
         else:
             ok=False
-            self.errors.append("no se pudo difinir lo operacion")
+            self.errors.append("no se pudo definir lo operacion")
         
         if not ok:
             self.errors.append("error en la linea " + str(num+1))

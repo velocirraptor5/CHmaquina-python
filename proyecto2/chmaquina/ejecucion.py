@@ -1,6 +1,7 @@
 import copy
+import pickle
 class ejecutar:
-    def __init__(self,arch,kernel,memoria,almacenar=False):
+    def __init__(self,arch,kernel,memoria,acumulador,ID,almacenar=False):
         self.arch = arch
         self.memoria=memoria
         self.kernel=kernel
@@ -11,14 +12,17 @@ class ejecutar:
         self.posVar=[]
         self.etiquetas=[]
         self.posEt=[]
-        self.acumulador=0
+        self.acumulador=acumulador
         self.linea=0
+        self.NumLin=0
         self.noAcabe=False
         self.imprimir=[]
         self.mostrar=[]
         self.errors=[]
         self.almacenar=almacenar
         self.almacen=[]
+        self.varLeer=0
+        self.ID=ID
         self.run()
 
     def run(self):
@@ -28,23 +32,29 @@ class ejecutar:
 
         for linea in self.arch:
             linea=linea.split()
-            
+            if linea[0]=="nueva":
+                self.nueva(linea)
             if linea[0]=="etiqueta":
                 self.etiquetas.append(linea[1])
                 self.posEt.append(int(linea[2])+self.kernel)
-            
-        for num,self.linea in enumerate(self.arch):
-            linea=self.linea.split()
-            self.accion(linea)
+        self.lineaAlinea()
+
+        #for self.linea in self.arch:
+    def lineaAlinea(self):
+        while self.NumLin < len(self.arch):  
             if self.almacenar:
                 self.almacen=copy.deepcopy(self)
-
-
-        
-
+            if self.noAcabe:
+                self.NumLin+=1
+                self.guardar()
+                break
+            self.linea=self.arch[self.NumLin]
+            linea=self.linea.split()
+            self.accion(linea)
+     
     def accion(self,linea):
         if linea==[]:
-            return
+            pass
         else:
             tipo=str(linea[0])
         
@@ -54,12 +64,14 @@ class ejecutar:
             self.almacene(linea)
         elif tipo == "vaya":
             self.vaya(linea)
+            return
         elif tipo == "vayasi":
             self.vayasi(linea)
-        elif tipo == "nueva":
-            self.nueva(linea)
-        elif tipo == "etiqueta":
             return
+        elif tipo == "nueva":
+            pass
+        elif tipo == "etiqueta":
+            pass
         elif tipo == "lea":
             self.lea(linea)
         elif tipo == "sume":
@@ -93,9 +105,11 @@ class ejecutar:
         elif tipo == "retorne":
             self.retorne(linea)
         elif tipo[0]=="/" and tipo[1]=="/":
-            return
+            pass
         else:
             self.errors.append("no se pudo difinir lo operacion")
+        
+        self.NumLin+=1
 
     def cargue(self,linea):
         i=self.variables.index(linea[1])
@@ -103,31 +117,58 @@ class ejecutar:
         valor=self.Memoria[RposVar]
         self.acumulador=valor
 
-    def almacene(self,linea):
+    def almacene(self,linea,ID="www5"):
         i=self.variables.index(linea[1])
         RposVar=self.posVar[i]-self.kernel-1
-        self.Memoria[RposVar]=self.acumulador
+        if ID=="www5":
+            self.Memoria[RposVar]=self.acumulador
+        else:
+            tipoV=self.tipoVar[i]
+            if tipoV=='I' or tipoV=='L':
+                try:
+                    self.Memoria[RposVar]=int(ID)
+                except:
+                    self.errors.append("el tipo de variable declarado no concide con el valor ingresado")
+                
+            if tipoV=='R':
+                try:
+                    self.Memoria[RposVar]=float(ID)
+                except:
+                    self.errors.append("el tipo de variable declarado no concide con el valor ingresado")
+                
+            if tipoV=='C':
+                self.Memoria[RposVar]=ID
+                
+            
 
     def vaya(self,linea):
         i=self.etiquetas.index(linea[1])
-        self.linea=self.arch[self.posEt[i]]
+        self.NumLin=self.posEt[i]-self.kernel-1
          
     def vayasi(self,linea):
         try:
             acumtemp=float(self.acumulador)
         except:
             self.errors.append("el Acumulador no puede ser convertido en valor numerico")
+            self.NumLin+=1
             return
 
         if(acumtemp>0):
             i=self.etiquetas.index(linea[1])
-            self.linea=self.arch[self.posEt[i]-self.kernel]
+            self.NumLin=self.posEt[i]-self.kernel-1
         if(acumtemp<0):
             i=self.etiquetas.index(linea[2])
-            self.linea=self.arch[self.posEt[i]-self.kernel]
-        else:
+            self.NumLin=self.posEt[i]-self.kernel-1
+        if(acumtemp==0):
+            self.NumLin+=1
             return
 
+    def lea(self,linea):
+        print("sdadsaddfdvlisvbruieksbv")
+        self.noAcabe=True
+        self.varLeer=linea[1]
+        print("ingrese el valor para la variable"+str(linea))
+        
     def nueva(self,linea):
         self.posMem+=1
         self.variables.append(linea[1])
@@ -142,10 +183,6 @@ class ejecutar:
                 n=' '
             self.Memoria.append(n)
         self.posVar.append(self.posMem+self.kernel)
-
-    def lea(self,linea):
-        self.noAcabe=True
-        input("ingrese el valor para la variable"+str(linea))
 
     def sume(self,linea):
         try:
@@ -230,8 +267,10 @@ class ejecutar:
             valor=int(valor)
         else:
             valor=float(valor)
-        
-        self.acumulador=acumtemp/valor
+        if valor!=0:
+            self.acumulador=acumtemp/valor
+        else:
+            self.errors.append("ERROR se Divide Por Cero")
 
     def potencia(self,linea):
         try:
@@ -329,7 +368,6 @@ class ejecutar:
         RposVar=self.posVar[i]-self.kernel-1
         self.Memoria[RposVar] = not bool(valor1)
         
-        
     def muestre(self,linea):
         if linea[1]== "acumulador":
             self.mostrar.append(self.acumulador)
@@ -350,3 +388,11 @@ class ejecutar:
     
     def retorne(self,linea):
         return 
+
+    def guardar(self,id=0):
+        with open('media/bodega/chEje'+str(id)+'.pkl','wb') as output:
+            pickle.dump(self,output,pickle.HIGHEST_PROTOCOL)
+    
+def chEjecguardado(id=0):
+    with open('media/bodega/chEje'+str(id)+'.pkl','rb') as input:
+        return pickle.load(input)
