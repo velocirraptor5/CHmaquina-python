@@ -11,11 +11,9 @@ la vitacora se puede observar de mejor manera en el git ejecutando el codigo"git
 igualmente en el web personal 
 
 MANUAL DE INSTALACION
-1. desde el 
+1. ejecuta pip install -r requirements.txt
 
-MANUAL:
-1. inicialmente asigne los valores al kernel y memoria
+si tienes algun problema mira el manual de uso
 
-2. precione Mostrar Memoria para almacenar los valores que desea
+o mandame un correo locampow@unal.edu.co 
 
-3. precione subir archivo  
