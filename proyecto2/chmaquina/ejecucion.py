@@ -13,7 +13,7 @@ class ejecutar:
         self.etiquetas=[]
         self.posEt=[]
         self.acumulador=acumulador
-        self.linea=0
+        self.linea=""
         self.NumLin=0
         self.noAcabe=False
         self.imprimir=[]
@@ -24,7 +24,11 @@ class ejecutar:
         self.varLeer=0
         self.ID=ID
         self.run()
-
+    
+    def cop(self):
+        cop=copia(self.Memoria,self.posMem,self.variables,self.tipoVar,self.posVar,self.etiquetas,self.posEt
+        ,self.acumulador,self.linea,self.NumLin,self.noAcabe,self.imprimir,self.mostrar,self.errors)
+        return copy.deepcopy(cop)
     def run(self):
         for linea in self.arch:
             self.Memoria.append(linea)
@@ -35,15 +39,13 @@ class ejecutar:
             if linea[0]=="nueva":
                 self.nueva(linea)
             if linea[0]=="etiqueta":
-                self.etiquetas.append(linea[1])
+                self.etiquetas.append(str(self.ID)+str(linea[1]))
                 self.posEt.append(int(linea[2])+self.kernel)
         self.lineaAlinea()
 
         #for self.linea in self.arch:
     def lineaAlinea(self):
         while self.NumLin < len(self.arch):  
-            if self.almacenar:
-                self.almacen=copy.deepcopy(self)
             if self.noAcabe:
                 self.NumLin+=1
                 self.guardar()
@@ -51,6 +53,8 @@ class ejecutar:
             self.linea=self.arch[self.NumLin]
             linea=self.linea.split()
             self.accion(linea)
+            if self.almacenar:
+                self.almacen.append(self.cop())
      
     def accion(self,linea):
         if linea==[]:
@@ -112,37 +116,37 @@ class ejecutar:
         self.NumLin+=1
 
     def cargue(self,linea):
-        i=self.variables.index(linea[1])
+        i=self.variables.index(str(self.ID)+str(linea[1]))
         RposVar=self.posVar[i]-self.kernel-1
         valor=self.Memoria[RposVar]
         self.acumulador=valor
 
-    def almacene(self,linea,ID="www5"):
-        i=self.variables.index(linea[1])
+    def almacene(self,linea,pasw="www5"):
+        i=self.variables.index(str(self.ID)+str(linea[1]))
         RposVar=self.posVar[i]-self.kernel-1
-        if ID=="www5":
+        if pasw=="www5":
             self.Memoria[RposVar]=self.acumulador
         else:
             tipoV=self.tipoVar[i]
             if tipoV=='I' or tipoV=='L':
                 try:
-                    self.Memoria[RposVar]=int(ID)
+                    self.Memoria[RposVar]=int(pasw)
                 except:
                     self.errors.append("el tipo de variable declarado no concide con el valor ingresado")
                 
             if tipoV=='R':
                 try:
-                    self.Memoria[RposVar]=float(ID)
+                    self.Memoria[RposVar]=float(pasw)
                 except:
                     self.errors.append("el tipo de variable declarado no concide con el valor ingresado")
                 
             if tipoV=='C':
-                self.Memoria[RposVar]=ID
+                self.Memoria[RposVar]=pasw
                 
             
 
     def vaya(self,linea):
-        i=self.etiquetas.index(linea[1])
+        i=self.etiquetas.index(str(self.ID)+str(linea[1]))
         self.NumLin=self.posEt[i]-self.kernel-1
          
     def vayasi(self,linea):
@@ -154,24 +158,23 @@ class ejecutar:
             return
 
         if(acumtemp>0):
-            i=self.etiquetas.index(linea[1])
+            i=self.etiquetas.index(str(self.ID)+str(linea[1]))
             self.NumLin=self.posEt[i]-self.kernel-1
         if(acumtemp<0):
-            i=self.etiquetas.index(linea[2])
+            i=self.etiquetas.index(str(self.ID)+str(linea[2]))
             self.NumLin=self.posEt[i]-self.kernel-1
         if(acumtemp==0):
             self.NumLin+=1
             return
 
     def lea(self,linea):
-        print("sdadsaddfdvlisvbruieksbv")
         self.noAcabe=True
         self.varLeer=linea[1]
         print("ingrese el valor para la variable"+str(linea))
         
     def nueva(self,linea):
         self.posMem+=1
-        self.variables.append(linea[1])
+        self.variables.append(str(self.ID)+str(linea[1]))
         self.tipoVar.append(linea[2])
         if(len(linea)==4):
             self.Memoria.append(linea[3])
@@ -194,7 +197,7 @@ class ejecutar:
                 self.errors.append("el Acumulador no puede ser convertido en valor numerico")
                 return  
           
-        i=self.variables.index(linea[1])
+        i=self.variables.index(str(self.ID)+str(linea[1]))
         RposVar=self.posVar[i]-self.kernel-1
         valor=self.Memoria[RposVar]
 
@@ -216,7 +219,7 @@ class ejecutar:
                 self.errors.append("el Acumulador no puede ser convertido en valor numerico")
                 return  
 
-        i=self.variables.index(linea[1])
+        i=self.variables.index(str(self.ID)+str(linea[1]))
         RposVar=self.posVar[i]-self.kernel-1
         valor=self.Memoria[RposVar]
         tipoV=self.tipoVar[i]
@@ -238,7 +241,7 @@ class ejecutar:
                 self.errors.append("el Acumulador no puede ser convertido en valor numerico")
                 return  
 
-        i=self.variables.index(linea[1])
+        i=self.variables.index(str(self.ID)+str(linea[1]))
         RposVar=self.posVar[i]-self.kernel-1
         valor=self.Memoria[RposVar]
         tipoV=self.tipoVar[i]
@@ -259,7 +262,7 @@ class ejecutar:
                 self.errors.append("el Acumulador no puede ser convertido en valor numerico")
                 return  
 
-        i=self.variables.index(linea[1])
+        i=self.variables.index(str(self.ID)+str(linea[1]))
         RposVar=self.posVar[i]-self.kernel-1
         valor=self.Memoria[RposVar]
         tipoV=self.tipoVar[i]
@@ -282,7 +285,7 @@ class ejecutar:
                 self.errors.append("el Acumulador no puede ser convertido en valor numerico")
                 return  
 
-        i=self.variables.index(linea[1])
+        i=self.variables.index(str(self.ID)+str(linea[1]))
         RposVar=self.posVar[i]-self.kernel-1
         valor=self.Memoria[RposVar]
         tipoV=self.tipoVar[i]
@@ -303,7 +306,7 @@ class ejecutar:
                 self.errors.append("el Acumulador no puede ser convertido en valor numerico")
                 return  
 
-        i=self.variables.index(linea[1])
+        i=self.variables.index(str(self.ID)+str(linea[1]))
         RposVar=self.posVar[i]-self.kernel-1
         valor=self.Memoria[RposVar]
         tipoV=self.tipoVar[i]
@@ -315,56 +318,56 @@ class ejecutar:
         self.acumulador=acumtemp%valor
 
     def concatene(self,linea):       
-        i=self.variables.index(linea[1])
+        i=self.variables.index(str(self.ID)+str(linea[1]))
         RposVar=self.posVar[i]-self.kernel-1
         valor=self.Memoria[RposVar]
         self.acumulador=self.acumulador+valor
 
     def elimine(self,linea):
-        i=self.variables.index(linea[1])
+        i=self.variables.index(str(self.ID)+str(linea[1]))
         RposVar=self.posVar[i]-self.kernel-1
         valor=self.Memoria[RposVar]
         while valor in self.acumulador:
             del self.acumulador[valor]
     
     def Extraiga(self,linea):
-        i=self.variables.index(linea[1])
+        i=self.variables.index(str(self.ID)+str(linea[1]))
         RposVar=self.posVar[i]-self.kernel-1
         valor=self.Memoria[RposVar]
         self.acumulador=self.acumulador[:valor]
 
     def Y(self,linea):
-        i=self.variables.index(linea[1])
+        i=self.variables.index(str(self.ID)+str(linea[1]))
         RposVar=self.posVar[i]-self.kernel-1
         valor1=self.Memoria[RposVar]
 
-        i=self.variables.index(linea[2])
+        i=self.variables.index(str(self.ID)+str(linea[2]))
         RposVar=self.posVar[i]-self.kernel-1
         valor2=self.Memoria[RposVar]
 
-        i=self.variables.index(linea[3])
+        i=self.variables.index(str(self.ID)+str(linea[3]))
         RposVar=self.posVar[i]-self.kernel-1
         self.Memoria[RposVar] = (bool(valor1) and bool(valor2))
 
     def O(self,linea):
-        i=self.variables.index(linea[1])
+        i=self.variables.index(str(self.ID)+str(linea[1]))
         RposVar=self.posVar[i]-self.kernel-1
         valor1=self.Memoria[RposVar]
 
-        i=self.variables.index(linea[2])
+        i=self.variables.index(str(self.ID)+str(linea[2]))
         RposVar=self.posVar[i]-self.kernel-1
         valor2=self.Memoria[RposVar]
 
-        i=self.variables.index(linea[3])
+        i=self.variables.index(str(self.ID)+str(linea[3]))
         RposVar=self.posVar[i]-self.kernel-1
         self.Memoria[RposVar] = (bool(valor1) or bool(valor2))
         
     def NO(self,linea):
-        i=self.variables.index(linea[1])
+        i=self.variables.index(str(self.ID)+str(linea[1]))
         RposVar=self.posVar[i]-self.kernel-1
         valor1=self.Memoria[RposVar]
 
-        i=self.variables.index(linea[2])
+        i=self.variables.index(str(self.ID)+str(linea[2]))
         RposVar=self.posVar[i]-self.kernel-1
         self.Memoria[RposVar] = not bool(valor1)
         
@@ -372,7 +375,7 @@ class ejecutar:
         if linea[1]== "acumulador":
             self.mostrar.append(self.acumulador)
             return
-        i=self.variables.index(linea[1])
+        i=self.variables.index(str(self.ID)+str(linea[1]))
         RposVar=self.posVar[i]-self.kernel-1
         valor=self.Memoria[RposVar]
         self.mostrar.append(valor)
@@ -381,7 +384,7 @@ class ejecutar:
         if linea[1]== "acumulador":
             self.imprimir.append(self.acumulador)
             return
-        i=self.variables.index(linea[1])
+        i=self.variables.index(str(self.ID)+str(linea[1]))
         RposVar=self.posVar[i]-self.kernel-1
         valor=self.Memoria[RposVar]
         self.imprimir.append(valor)
@@ -392,7 +395,24 @@ class ejecutar:
     def guardar(self,id=0):
         with open('media/bodega/chEje'+str(id)+'.pkl','wb') as output:
             pickle.dump(self,output,pickle.HIGHEST_PROTOCOL)
-    
+
+class copia:
+    def __init__(self,Memoria,posMem,variables,tipoVar,posVar,etiquetas,posEt,acumulador,linea,Numlin,noAcabe,imprimir,mostrar,errors):
+        self.Memoria=Memoria
+        self.posMem=posMem
+        self.variables=variables
+        self.tipoVar=tipoVar
+        self.posVar=posVar
+        self.etiquetas=etiquetas
+        self.posEt=posEt
+        self.acumulador=acumulador
+        self.linea=linea
+        self.NumLin=Numlin
+        self.noAcabe=noAcabe
+        self.imprimir=imprimir
+        self.mostrar=mostrar
+        self.errors=errors
+
 def chEjecguardado(id=0):
     with open('media/bodega/chEje'+str(id)+'.pkl','rb') as input:
         return pickle.load(input)

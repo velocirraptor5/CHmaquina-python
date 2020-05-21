@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.views.generic.edit import UpdateView, CreateView
 from django.core.files import File
 from django.urls import reverse_lazy
-from .models import Archivo,Kernel,Lea
+from .models import Archivo,Kernel,Lea,Paso
 from .verSintax import sintax
 from .ejecucion import ejecutar,chEjecguardado
 from django.urls import path
@@ -16,19 +16,21 @@ from sqlite3 import Error
 from django.db import connection
 import os
 import pickle
+import copy
 
 
 class VistaPrincipal(CreateView):
     model = Archivo
     model2=  Kernel
     model3 = Lea
+    model4 = Paso
     fields = ['archivo', 'memoria','kernel']
     fields2=['memoK','kerK']
     fields3 = ['lea']
-
+    fields4 = ['paso']
     success_url= reverse_lazy('home')
     template_name = "core/base.html" 
-    def __init__(self):
+    def __init__(self,redirigido=False,w=0):
         self.Errores=[]
         self.nombres=[]
         self.kernel=9
@@ -53,9 +55,10 @@ class VistaPrincipal(CreateView):
         self.mostrar=[]
         self.imprimir=[]
         self.IDs=[]
-        
+        self.guardado=False
+        self.almacen=[]
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request,almacenar=False, *args, **kwargs):
         elementos = Archivo.objects.all()
         if list(elementos)==[]:
             self.Errores.append("Bienvenido a CH maquina")
@@ -125,8 +128,10 @@ class VistaPrincipal(CreateView):
                 """W=self.paraFront()
                 return render(request, self.template_name,W)"""
             if self.OK:
-                
-                chEjec=ejecutar(self.arch,self.kernel,self.memoria,self.acumulador,self.ID)
+                chEjec=ejecutar(self.arch,self.kernel,self.memoria,self.acumulador,self.ID,almacenar)
+                if almacenar:
+                    for ch in chEjec.almacen:
+                        self.almacen.append(self.paraFrontporPaso(ch))
                 self.pc=chEjec.linea
                 self.acumulador=chEjec.acumulador
                 self.Errores.extend(chEjec.errors)
@@ -143,11 +148,12 @@ class VistaPrincipal(CreateView):
                 self.imprimir.extend(chEjec.imprimir)
                 self.posMem+=chEjec.posMem
                 if chEjec.noAcabe:
-                    print("en el no acabe de self.ok")
                     self.guardar(self.paraFrontEje())
+                    self.guardado=True
                     W=self.paraFrontEjecNoFin(chEjec.varLeer)
                     return render(request,self.template_name,W)
                 self.ID+=1
+                
             else:
                 self.Errores.append("no se puede ejecutar "+str(self.nombreArch) + " tiene errores de ejecucion")
                 return render(request, self.template_name,self.paraFront())
@@ -180,7 +186,6 @@ class VistaPrincipal(CreateView):
         variables=[]
         variables.append(self.posVars)
         variables.append(self.Variables)
-        print(variables)
         variables=np.column_stack(variables)
         resp['Variables']=variables
         
@@ -199,6 +204,8 @@ class VistaPrincipal(CreateView):
         programas.append(self.RLP)
         programas=np.column_stack(programas)
         resp['Programas']=programas
+        resp['noPantalla']=self.mostrar
+        resp['noImpresora']=self.imprimir
         return resp
     
     def paraFrontEjecNoFin(self,lea):
@@ -206,6 +213,77 @@ class VistaPrincipal(CreateView):
         resp['ModalActivado']=True
         resp['lea']=lea
         return resp
+    
+    def paraFrontporPaso(self,chEjec):
+        errores=self.Errores.copy()
+        errores.extend(chEjec.errors)
+        copMemoria=self.Memoria.copy()
+        copMemoria.extend(chEjec.Memoria)
+        copVariables=self.Variables.copy()
+        copVariables.extend(chEjec.variables)
+        copposVar=self.posVars.copy()
+        copposVar.extend(chEjec.posVar)
+        copEtiquetas=self.Etiquetas.copy()
+        copEtiquetas.extend(chEjec.etiquetas)
+        copposEtis=self.posEtis.copy()
+        copposEtis.extend(chEjec.posEt)
+        copINS=self.INS.copy()
+        copINS.append(len(self.arch))
+        copRB=self.RB.copy()
+        copRB.append(self.posMem)
+        copRLC=self.RLC.copy()
+        copRLC.append(len(self.arch)+self.posMem)
+        copRLP=self.RLP.copy()
+        copRLP.append(len(self.Memoria)+self.kernel)
+        copmostrar=self.mostrar.copy()
+        copmostrar.extend(chEjec.mostrar)
+        copimprimir=self.imprimir.copy()
+        copimprimir.extend(chEjec.imprimir)
+        copposMem=self.posMem
+        copposMem+=chEjec.posMem
+
+        numKernels=[]
+        numMemorias=[]
+        
+        numKernels.extend(range(1,self.kernel+1))
+        numMemorias.extend(range(copposMem, self.memoria))
+        variables=[]
+        variables.append(copposVar)
+        variables.append(copVariables)
+        variables=np.column_stack(variables)
+        
+        etiquetas=[]
+        etiquetas.append(copposEtis)
+        etiquetas.append(copEtiquetas)
+        etiquetas=np.column_stack(etiquetas)
+        
+        programas=[]
+        programas.append(self.IDs)
+        programas.append(self.nombres)
+        programas.append(copINS)
+        programas.append(copRB)
+        programas.append(copRLC)
+        programas.append(copRLP)
+        programas=np.column_stack(programas)
+        
+        return  {
+                'memoria':self.memoria,
+                'kernel':self.kernel,
+                'errores':errores,
+                'nombre':self.nombreArch,
+                'MemoriaLibre': numMemorias, 
+                'numKernels': numKernels,
+                'pc':chEjec.linea,
+                'acumulador':chEjec.acumulador,
+                'modoKernel':self.modoKernel,
+                'Memoria':enumerate(copMemoria,self.kernel+1),
+                'Memoria2':enumerate(copMemoria,self.kernel+1),
+                'Variables':variables,
+                'Etiquetas':etiquetas,
+                'Programas':programas,
+                'Pantalla':copmostrar,
+                'Impresora':copimprimir
+                }
 
 
     def get_object(self, queryset=None):
@@ -225,8 +303,8 @@ class VistaPrincipal(CreateView):
             self.Errores.append("no se puede abrir el archivo porfavor verificar el formato")
             return False 
     
-    def guardar(self,resp):
-        with open('media/bodega/chEjeRESP.pkl','wb') as output:
+    def guardar(self,resp,extra=""):
+        with open('media/bodega/chEjeRESP'+str(extra)+'.pkl','wb') as output:
             pickle.dump(resp,output,pickle.HIGHEST_PROTOCOL)
 
   
@@ -236,17 +314,25 @@ class vistaEjecucion(VistaPrincipal):
 
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
-        if not self.OK:
-            self.Errores.append("no se puede ejecutar"+str(self.nombreArch) + "tiene errores de ejecucion")
-            return render(request, self.template_name,self.paraFront())
-        return render(request, self.template_name,self.paraFrontEje2())
-    
+        if not self.guardado:
+            if not self.OK:
+                self.Errores.append("no se puede ejecutar"+str(self.nombreArch) + "tiene errores de ejecucion")
+                return render(request, self.template_name,self.paraFront())
+            return render(request, self.template_name,self.paraFrontEje2())
+        if self.guardado:
+            visSave=chEjecguardado("RESPEJEC")
+            W=self.paraFrontTerminar(visSave)
+            return render(request,self.template_name,W)
+
     def paraFrontEje2(self):
         resp=super().paraFrontEje()
         resp['Pantalla']=self.mostrar
         resp['Impresora']=self.imprimir
         return resp
-
+    def paraFrontTerminar(self,resp):
+        resp['Pantalla']=resp['noPantalla']
+        resp['Impresora']=resp['noImpresora']
+        return resp
 
 class vistaMemoria(CreateView):
     model = Kernel
@@ -312,6 +398,7 @@ class Salir(VistaPrincipal):
             conn.execute("DELETE FROM 'chmaquina_Kernel'")
             conn.execute("DELETE FROM 'chmaquina_archivo'")
             conn.execute("DELETE FROM 'chmaquina_lea'")
+            conn.execute("DELETE FROM 'chmaquina_paso'")
             return redirect('home')
 
 
@@ -328,15 +415,14 @@ class terminarEjec(VistaPrincipal):
         self.actualizar(visSave)
         chEjec=chEjecguardado()
         DBlea=Lea.objects.all()
-        print(chEjec.linea)
-        print(DBlea)
         valLea=list(DBlea)[-1]
-        linea=chEjec.linea.split()
-        chEjec.almacene(linea,valLea.lea)
-        chEjec.noAcabe=False
+        
         tempErr=[err for err in self.Errores if err not in chEjec.errors]
         self.Errores=tempErr
-        tempMem=[mem for mem in self.Memoria if mem not in chEjec.Memoria]
+        chMemo=[]
+        for chmem in chEjec.Memoria:
+            chMemo.append(str(chmem))
+        tempMem=[mem for mem in self.Memoria if mem not in chMemo]
         self.Memoria=tempMem
         tempVar=[var for var in self.Variables if var not in chEjec.variables]
         self.Variables=tempVar
@@ -352,6 +438,9 @@ class terminarEjec(VistaPrincipal):
         self.imprimir=tempimp
         self.posMem-=chEjec.posMem
 
+        linea=chEjec.linea.split()
+        chEjec.almacene(linea,valLea.lea)
+        chEjec.noAcabe=False
         chEjec.lineaAlinea()
         self.pc=chEjec.linea
         self.acumulador=chEjec.acumulador
@@ -364,11 +453,14 @@ class terminarEjec(VistaPrincipal):
         self.mostrar.extend(chEjec.mostrar)
         self.imprimir.extend(chEjec.imprimir)
         self.posMem+=chEjec.posMem
+        VP= VistaPrincipal()
+        VP=self
         if chEjec.noAcabe:
-            W=self.paraFrontEjecNoFin(chEjec.varLeer)
+            W=VP.paraFrontEjecNoFin(chEjec.varLeer)
             return render(request,self.template_name,W)
-        W=self.paraFrontEje()
-        return render(request, self.template_name,W)
+        W=VP.paraFrontEje()
+        VP.guardar(W,"EJEC")
+        return render(request,self.template_name,W)
     
     def actualizar(self,resp):
         self.memoria=resp['memoria']
@@ -398,3 +490,33 @@ class terminarEjec(VistaPrincipal):
             self.RB.append(rb)
             self.RLC.append(rlc)
             self.RLP.append(rlp)
+
+class PasoAPaso(VistaPrincipal):
+    model=Paso
+    fields=['paso']
+    success_url= reverse_lazy('pap')
+    template_name = "core/base.html" 
+    def __init__(self):
+        super().__init__()
+        self.paso=0
+
+    def get(self, request, *args, **kwargs):
+        super().get(request,True, *args, **kwargs)
+        if not self.OK:
+            self.Errores.append("no se puede ejecutar"+str(self.nombreArch) + "tiene errores de ejecucion")
+            return render(request, self.template_name,self.paraFront())
+        DBpasos=Paso.objects.all()
+        DBpasos=list(DBpasos)
+        if(DBpasos==[]):
+            return render(request, self.template_name,self.paraFrontPaP(self.almacen[0]))
+        else:
+            self.paso=(DBpasos[-1]).paso
+            if self.paso<len(self.almacen):
+                return render(request, self.template_name,self.paraFrontPaP(self.almacen[self.paso]))
+            else:
+                self.mostrar.append("Acabo el paso a paso")
+                return render(request, self.template_name,self.paraFrontEje())
+    def paraFrontPaP(self,resp):
+        resp['PaP']=True
+        resp['paso']=self.paso+1
+        return resp

@@ -16,6 +16,9 @@ class Kernel(models.Model):
 class Lea(models.Model):
     lea = models.TextField(null=True,blank=True)
 
+class Paso(models.Model):
+    paso=models.IntegerField(null=True,blank=True)
+
 
 
 
