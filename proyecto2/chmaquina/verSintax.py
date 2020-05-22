@@ -74,7 +74,7 @@ class sintax:
         elif tipo == "retorne":
             ok= self.retorne(linea,num)
             self.numRetornes+=1
-        elif tipo == " " or (tipo[0]=="/" and tipo[1]=="/"):
+        elif tipo == " " or (tipo[0]=="/" and tipo[1]=="/") or tipo=="limpie":
             return
         else:
             ok=False

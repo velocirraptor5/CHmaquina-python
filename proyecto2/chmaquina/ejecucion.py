@@ -66,6 +66,8 @@ class ejecutar:
             self.cargue(linea)
         elif tipo == "almacene":
             self.almacene(linea)
+        elif tipo == "limpie":
+            self.acumulador=0
         elif tipo == "vaya":
             self.vaya(linea)
             return
