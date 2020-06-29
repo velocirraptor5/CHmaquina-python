@@ -19,6 +19,10 @@ class Lea(models.Model):
 class Paso(models.Model):
     paso=models.IntegerField(null=True,blank=True)
 
+class MetodoPlanificacion(models.Model):
+    metodo=models.TextField(null=True,blank=True)
+    
+
 
 
 

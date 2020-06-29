@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.views.generic.edit import UpdateView, CreateView
 from django.core.files import File
 from django.urls import reverse_lazy
-from .models import Archivo,Kernel,Lea,Paso
+from .models import Archivo,Kernel,Lea,Paso, MetodoPlanificacion
 from .verSintax import sintax
 from .ejecucion import ejecutar,chEjecguardado
 from django.urls import path
@@ -20,14 +20,18 @@ import copy
 
 
 class VistaPrincipal(CreateView):
+
     model = Archivo
+    fields = ['archivo', 'memoria','kernel']
     model2=  Kernel
     model3 = Lea
     model4 = Paso
-    fields = ['archivo', 'memoria','kernel']
+    model5 = MetodoPlanificacion
+
     fields2=['memoK','kerK']
     fields3 = ['lea']
     fields4 = ['paso']
+    fields5 = ['metodo']
     success_url= reverse_lazy('home')
     template_name = "core/base.html" 
     def __init__(self,redirigido=False,w=0):
@@ -56,6 +60,7 @@ class VistaPrincipal(CreateView):
         self.imprimir=[]
         self.IDs=[]
         self.guardado=False
+        self.MetodoPlanificacion=False
         self.almacen=[]
 
     def get(self, request,almacenar=False, *args, **kwargs):
@@ -177,7 +182,8 @@ class VistaPrincipal(CreateView):
                 'acumulador':self.acumulador,
                 'modoKernel':self.modoKernel,
                 'Memoria':enumerate(self.Memoria,self.kernel+1),
-                'Memoria2':enumerate(self.Memoria,self.kernel+1)
+                'Memoria2':enumerate(self.Memoria,self.kernel+1),
+                'MetodoPlanificacion':self.MetodoPlanificacion
                 }
 
     def paraFrontEje(self):
@@ -307,7 +313,27 @@ class VistaPrincipal(CreateView):
         with open('media/bodega/chEjeRESP'+str(extra)+'.pkl','wb') as output:
             pickle.dump(resp,output,pickle.HIGHEST_PROTOCOL)
 
-  
+class vistaMetodoPlan(CreateView):
+    model=MetodoPlanificacion
+    fields=['metodo']
+    template_name = "core/base.html" 
+    success_url= reverse_lazy('obtenerPlan')
+    
+    def __init__(self):
+        self.vista=VistaPrincipal()
+    
+    def get(self, request,almacenar=False, *args, **kwargs):
+
+        self.vista.Errores.append("deberia de habrer salido el coso de planificacion de la memoria")
+        plan=list(MetodoPlanificacion.objects.all())
+        if(plan != []):
+            print("sdhsf\njksdhflesfaihb\njkdsclasdbvaleuivbw\naeñvulaewbvilevb\nheawvbsvgb\nhladsjvbl\nhdsjav\n----------------------------------")
+            return redirect('home')
+
+        self.vista.MetodoPlanificacion=True
+        W=self.vista.paraFront()
+        return render(request,self.template_name,W)
+      
 class vistaEjecucion(VistaPrincipal):
     def __init__(self):
         super().__init__()
@@ -399,7 +425,8 @@ class Salir(VistaPrincipal):
             conn.execute("DELETE FROM 'chmaquina_archivo'")
             conn.execute("DELETE FROM 'chmaquina_lea'")
             conn.execute("DELETE FROM 'chmaquina_paso'")
-            return redirect('home')
+            conn.execute("DELETE FROM 'chmaquina_metodoplanificacion'")
+            return redirect('obtenerPlan')
 
 
 class terminarEjec(VistaPrincipal):
