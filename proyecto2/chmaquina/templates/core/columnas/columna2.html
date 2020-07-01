@@ -22,6 +22,18 @@
             {% endif %}
         </div>
     </div>
+    <div class="row row2 justify-content-center d-flex align-items-center">
+        <div class="text ">
+            {% if modoKernel %}
+              {% if MetodoPlanificacion %}
+                <button type="button" class="btn btn-primary center-block" data-toggle="modal" data-target="#myModal">RR(por defecto)</button>
+              {% else %}
+                <a class="nav-link" href="{% url 'obtenerPlan' %}"> Act:{{plan}} Cambiar</a>
+              {% endif %}
+            {% endif %}
+        </div>
+    </div>
+    
 </div>
 <a class="imagen">
     <img src="{% static 'core/img/impresora.png'%}" alt="Monitor" height="400" width="500">

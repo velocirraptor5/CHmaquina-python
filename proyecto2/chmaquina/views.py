@@ -17,6 +17,7 @@ from django.db import connection
 import os
 import pickle
 import copy
+import random
 
 
 class VistaPrincipal(CreateView):
@@ -60,7 +61,8 @@ class VistaPrincipal(CreateView):
         self.imprimir=[]
         self.IDs=[]
         self.guardado=False
-        self.MetodoPlanificacion=False
+        self.MetodoPlanificacion=""
+        self.orden=[]
         self.almacen=[]
 
     def get(self, request,almacenar=False, *args, **kwargs):
@@ -106,19 +108,34 @@ class VistaPrincipal(CreateView):
                 self.nombreArch = list((str(elemento.archivo).split('/')))[1]    
                 self.nombres.append(self.nombreArch)
                 self.IDs.append(self.ID)
+                self.ID+=1
             except:
                 self.nombreArch = "ERROR"
                 self.Errores.append("Error en la busqueda del archivo")
                 W=self.paraFront()
                 return render(request, self.template_name,W) 
-        
+
             #se verifica que el archivo sea legible
             ok=self.leerch()
             if not ok:
+                #el leerch manda el mensaje de error a la pantalla
                 W=self.paraFront()
                 return render(request, self.template_name,W) 
 
             # una vez cargado el archivo se verifica si la Sintaxis esta bien
+        try:
+            self.MetodoPlanificacion=list(MetodoPlanificacion.objects.all())[-1].metodo
+        except:
+            with connection.cursor() as conn:
+                conn.execute("INSERT INTO 'chmaquina_metodoplanificacion'  (id,metodo)  VALUES (1,'RR');")
+            self.MetodoPlanificacion="Prioridad"
+        
+        self.ordenar()
+        print(self.orden)
+        for num in self.orden:    
+            self.nombreArch=self.nombres[num]
+            self.ID=self.IDs[num]
+            self.leerch()
             sixCH=sintax(self.arch)
             self.arch=sixCH.ch
             if sixCH.OK:
@@ -157,8 +174,6 @@ class VistaPrincipal(CreateView):
                     self.guardado=True
                     W=self.paraFrontEjecNoFin(chEjec.varLeer)
                     return render(request,self.template_name,W)
-                self.ID+=1
-                
             else:
                 self.Errores.append("no se puede ejecutar "+str(self.nombreArch) + " tiene errores de ejecucion")
                 return render(request, self.template_name,self.paraFront())
@@ -171,6 +186,13 @@ class VistaPrincipal(CreateView):
         
         numKernels.extend(range(1,self.kernel+1))
         numMemorias.extend(range(self.posMem, self.memoria))
+        try:
+            plan=list(MetodoPlanificacion.objects.all())[-1].metodo
+            boolPlanificacion=False
+        except :
+            plan="RR"
+            boolPlanificacion=True
+        
         return  {
                 'memoria':self.memoria,
                 'kernel':self.kernel,
@@ -183,7 +205,8 @@ class VistaPrincipal(CreateView):
                 'modoKernel':self.modoKernel,
                 'Memoria':enumerate(self.Memoria,self.kernel+1),
                 'Memoria2':enumerate(self.Memoria,self.kernel+1),
-                'MetodoPlanificacion':self.MetodoPlanificacion
+                'MetodoPlanificacion': boolPlanificacion,
+                'plan':plan
                 }
 
     def paraFrontEje(self):
@@ -313,24 +336,90 @@ class VistaPrincipal(CreateView):
         with open('media/bodega/chEjeRESP'+str(extra)+'.pkl','wb') as output:
             pickle.dump(resp,output,pickle.HIGHEST_PROTOCOL)
 
+    def ordenar(self):
+        if self.MetodoPlanificacion=="FCFS":
+            self.orden= range(len(self.nombres))
+        
+        if self.MetodoPlanificacion=="SJF":
+            menor=[]
+            ids=[]
+            i=0
+            for nombre in self.nombres:
+                self.nombreArch=nombre
+                self.leerch()
+                bandera= False
+                if nombre==self.nombres[0]:
+                    menor.append(len(self.arch))
+                    ids.append(0)
+                else:
+                    for longitud in menor:
+                        if len(self.arch)<longitud:
+                            i+=1
+                            num=menor.index(longitud)
+                            menor.insert(num,len(self.arch))
+                            ids.insert(num,i)
+                            bandera=True
+                            break
+                    if not bandera:
+                        i+=1
+                        menor.append(len(self.arch))
+                        ids.append(i)
+            self.orden=ids
+        
+        if self.MetodoPlanificacion=="Prioridad":
+            mayor=[]
+            ids=[]
+            i=0
+            for nombre in self.nombres:
+                self.nombreArch=nombre
+                self.leerch()
+                bandera= False
+                if nombre==self.nombres[0]:
+                    mayor.append(random.randint(1,101))
+                    ids.append(0)
+                else:
+                    for prio in mayor:
+                        ran= random.randint(1,101)
+                        if ran>prio:
+                            i+=1
+                            num=mayor.index(prio)
+                            mayor.insert(num,ran)
+                            ids.insert(num,i)
+                            bandera=True
+                            break
+                    if not bandera:
+                        i+=1
+                        mayor.append(ran)
+                        ids.append(i)
+            self.orden=ids
+            
+            if self.MetodoPlanificacion=="" or self.MetodoPlanificacion=="RR" :
+                print("hola")
+
+
+        
+        
 class vistaMetodoPlan(CreateView):
     model=MetodoPlanificacion
     fields=['metodo']
     template_name = "core/base.html" 
-    success_url= reverse_lazy('obtenerPlan')
-    
+    success_url= reverse_lazy('home')
+
     def __init__(self):
         self.vista=VistaPrincipal()
     
     def get(self, request,almacenar=False, *args, **kwargs):
 
-        self.vista.Errores.append("deberia de habrer salido el coso de planificacion de la memoria")
+        self.vista.Errores.append("Porfavor selecciones un metodo de planeacion")
+        self.vista.Errores.append("de lo contrario se asignara Round Robin")
         plan=list(MetodoPlanificacion.objects.all())
-        if(plan != []):
-            print("sdhsf\njksdhflesfaihb\njkdsclasdbvaleuivbw\naeñvulaewbvilevb\nheawvbsvgb\nhladsjvbl\nhdsjav\n----------------------------------")
-            return redirect('home')
+        try:
+            metodo=plan[-1].metodo
+        except:
+            metodo="RR"
 
-        self.vista.MetodoPlanificacion=True
+        self.vista.MetodoPlanificacion=metodo
+        self.vista.modoKernel=True
         W=self.vista.paraFront()
         return render(request,self.template_name,W)
       
