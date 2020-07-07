@@ -366,7 +366,7 @@ class VistaPrincipal(CreateView):
                         ids.append(i)
             self.orden=ids
         
-        if self.MetodoPlanificacion=="Prioridad":
+        if self.MetodoPlanificacion=="Prioridad" or self.MetodoPlanificacion=="RR":
             mayor=[]
             ids=[]
             i=0
